@@ -4,14 +4,26 @@ from typing import List
 from fastapi import FastAPI
 from pydantic import BaseModel
 import marko
-from marko.block import Heading, Paragraph
 from marko.inline import RawText, StrongEmphasis as Strong, Emphasis, Link
+from chromadb.utils import embedding_functions
+import chromadb
+
 
 load_dotenv()  # take environment variables from .env.
+
+client = chromadb.Client()
+
+openai_ef = embedding_functions.OpenAIEmbeddingFunction(
+                api_key=os.environ.get("OPENAI_API_KEY"),
+                model_name="text-embedding-ada-002"
+            )
+
+collection = client.create_collection("posthog", embedding_function=openai_ef) 
+
 app = FastAPI()
 
 class Entry(BaseModel):
-    # title: str
+    id: str
     slug: str
     rawBody: str
 
@@ -26,9 +38,24 @@ async def root():
 def create_entries(entries: Entries):
     for entry in entries.entries:
         ps = extract_markdown_paragraphs(entry.rawBody)
-        print(ps)
+        for index, p in enumerate(ps):
+            if p:
+                collection.add(
+                    documents=[p],
+                    ids=[entry.id + f"-{index}"]
+                )
 
     return []
+
+@app.get("/search")
+def search_entries(query: str):
+    results = collection.query(
+        query_texts=[query],
+        n_results=10,
+        
+    )
+    return results
+
 
 def extract_markdown_paragraphs(markdown_str):
     def to_markdown(element):
