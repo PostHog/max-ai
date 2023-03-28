@@ -39,10 +39,11 @@ def create_entries(entries: Entries):
     for entry in entries.entries:
         ps = extract_markdown_paragraphs(entry.rawBody)
         for index, p in enumerate(ps):
-            collection.add(
-                documents=p,
-                ids=[entry.id + f"-{index}"]
-            )
+            if p:
+                collection.add(
+                    documents=[p],
+                    ids=[entry.id + f"-{index}"]
+                )
 
     return []
 
@@ -51,6 +52,7 @@ def search_entries(query: str):
     results = collection.query(
         query_texts=[query],
         n_results=10,
+        
     )
     return results
 
