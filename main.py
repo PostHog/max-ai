@@ -22,15 +22,13 @@ class Entries(BaseModel):
 async def root():
     return {"message": "Hello World"}
 
+@app.post("/entries/")
 def create_entries(entries: Entries):
     for entry in entries.entries:
         ps = extract_markdown_paragraphs(entry.rawBody)
         print(ps)
 
     return []
-
-import marko
-
 
 def extract_markdown_paragraphs(markdown_str):
     def to_markdown(element):
