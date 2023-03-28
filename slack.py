@@ -1,4 +1,7 @@
 import os
+import logging
+
+import openai
 
 from dotenv import load_dotenv
 from slack_bolt import App
@@ -6,6 +9,12 @@ from slack_bolt import App
 
 load_dotenv()
 
+## Initialize OpenAI
+openai.api_key = os.environ.get("OPENAI_TOKEN")
+models = [m.id for m in openai.Model.list()['data']]
+print(f"Available models: {', '.join(models)}")
+
+## "gpt-4" and "gpt-3.5-turbo" are the two we'll use here
 
 # Initializes your app with your bot token and signing secret
 app = App(
@@ -67,11 +76,31 @@ def update_home_tab(client, event, logger):
     logger.error(f"Error publishing home tab: {e}")
 
 
+def summarize_thread(thread):
+  completion = openai.ChatCompletion.create(model="gpt-3.5-turbo",
+                                            messages=[{"role": "user", "content": "Hello world!"}])
+  return completion.choices[0].message.content
+
+
+@app.event("message")
+def handle_message_events(body, logger, say):
+  logger.info(body)
+  event = body["event"]
+
+  if "thread_ts" in event:
+    thread_ts = event["thread_ts"]
+    thread = app.client.conversations_replies(channel=event["channel"], ts=thread_ts)
+    summary = summarize_thread(thread)
+    print(summary)
+    say(text=summary, thread_ts=thread_ts)
+
 @app.event("app_mention")
 def handle_app_mention_events(body, logger, say):
         logger.info(body)
         event = body["event"] 
+
         thread_ts = event.get("thread_ts", None) or event["ts"]
+
         say(text="hi there! :wave:", thread_ts=thread_ts)
 
 
