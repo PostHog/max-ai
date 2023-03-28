@@ -67,6 +67,14 @@ def update_home_tab(client, event, logger):
     logger.error(f"Error publishing home tab: {e}")
 
 
+@app.event("app_mention")
+def handle_app_mention_events(body, logger, say):
+        logger.info(body)
+        event = body["event"] 
+        thread_ts = event.get("thread_ts", None) or event["ts"]
+        say(text="hi there! :wave:", thread_ts=thread_ts)
+
+
 # Start your app
 if __name__ == "__main__":
         app.start(port=int(os.environ.get("PORT", 3000)))
