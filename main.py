@@ -8,6 +8,9 @@ from marko.inline import RawText, StrongEmphasis as Strong, Emphasis, Link
 from chromadb.utils import embedding_functions
 import chromadb
 
+
+load_dotenv()  # take environment variables from .env.
+
 client = chromadb.Client()
 
 openai_ef = embedding_functions.OpenAIEmbeddingFunction(
@@ -17,9 +20,6 @@ openai_ef = embedding_functions.OpenAIEmbeddingFunction(
 
 collection = client.create_collection("posthog", embedding_function=openai_ef) 
 
-
-
-load_dotenv()  # take environment variables from .env.
 app = FastAPI()
 
 class Entry(BaseModel):
