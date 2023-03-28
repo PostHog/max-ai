@@ -30,7 +30,7 @@ def create_entries(entries: Entries):
 
     return []
 
-def extract_markdown_paragraphs(markdown_str):
+def extract_markdown_paragraphs(markdown_str) -> List[str]:
     def to_markdown(element):
         if isinstance(element, list):
             return ''.join(to_markdown(child) for child in element)
