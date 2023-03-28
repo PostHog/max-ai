@@ -22,7 +22,7 @@ class Entries(BaseModel):
 async def root():
     return {"message": "Hello World"}
 
-@app.post("/entries/")
+@app.post("/entries")
 def create_entries(entries: Entries):
     for entry in entries.entries:
         ps = extract_markdown_paragraphs(entry.rawBody)
@@ -32,10 +32,9 @@ def create_entries(entries: Entries):
 
 def extract_markdown_paragraphs(markdown_str):
     def to_markdown(element):
-        if hasattr(element, 'children'):
-            return ''.join(to_markdown(child) for child in element.children)
+        if isinstance(element, list):
+            return ''.join(to_markdown(child) for child in element)
         elif isinstance(element, RawText):
-            print("RawText", element)
             return element.children
         elif isinstance(element, Strong):
             return f"**{to_markdown(element.children)}**"
@@ -51,7 +50,7 @@ def extract_markdown_paragraphs(markdown_str):
 
     for node in marko_doc.children:
         if isinstance(node, marko.block.Paragraph):
-            markdown_paragraph = to_markdown(node)
+            markdown_paragraph = to_markdown(node.children)
             paragraphs.append(markdown_paragraph)
 
     return paragraphs
