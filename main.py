@@ -59,7 +59,11 @@ retriever = EmbeddingRetriever(
 )
 
 
-generator = OpenAIAnswerGenerator(api_key=os.getenv("OPENAI_TOKEN"), max_tokens=1024)
+generator = OpenAIAnswerGenerator(
+    api_key=os.getenv("OPENAI_TOKEN"),
+    model="gpt-3.5-turbo",
+    max_tokens=1024
+)
 
 class Entry(BaseModel):
     id: str
