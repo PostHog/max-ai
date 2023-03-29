@@ -133,7 +133,17 @@ def handle_message_events(body, logger, say):
 
         if follow_up:
             response = get_query_response(event["text"])
-            say(blocks=FEEDBACK_BLOCKS, text=response, thread_ts=event["ts"])
+            blocks = [
+                {
+                    "type": "section",
+                    "text": {
+                        "type": "mrkdwn",
+                        "text": response
+                    }
+                },
+                *FEEDBACK_BLOCKS
+            ]
+            say(blocks=blocks, thread_ts=event["ts"])
         return
     # thread response in a public channel
     elif "thread_ts" in event and event["channel_type"] == "channel":
@@ -186,7 +196,17 @@ def handle_app_mention_events(body, logger, say):
         if "please summarize this" in event["text"].lower():
             say(text="On it!", thread_ts=thread_ts)
             summary = summarize_thread(thread)
-            say(blocks=FEEDBACK_BLOCKS, text=summary, thread_ts=thread_ts)
+            blocks = [
+                {
+                    "type": "section",
+                    "text": {
+                        "type": "mrkdwn",
+                        "text": summary
+                    }
+                },
+                *FEEDBACK_BLOCKS
+            ]
+            say(blocks=blocks, thread_ts=thread_ts)
             return
 
         thread = preprocess_slack_thread(bot_id, thread)
