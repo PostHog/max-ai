@@ -19,13 +19,13 @@ class Entries(BaseModel):
 
 @app.post("/entries")
 def create_entries(entries: Entries):
+    collection = get_collection("posthog")
     for entry in entries.entries:
         headings = split_markdown_sections(entry.rawBody)
-        for index, heading in enumerate(headings):
-            # count how many new lines are in the string
-            count = heading.count('\n')
-            if count > 0:
-                print(count)
+        collection.add(
+            documents=headings,
+            ids=[entry.id + "-" + str(i) for i in range(len(headings))],
+        )
 
     return []
 
