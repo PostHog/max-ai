@@ -102,9 +102,20 @@ def handle_message_events(body, logger, say):
         return
     # thread response in a public channel
     elif "thread_ts" in event and event["channel_type"] == "channel":
-        thread = app.client.conversations_history(channel=event["channel"], limit=7)
-        thread = preprocess_slack_thread(bot_id, thread)
-        print(thread)
+        thread_ts = event["thread_ts"]
+        # Call the conversations.replies method with the channel ID and thread timestamp
+        try:
+            result = app.client.conversations_replies(channel=event["channel"], ts=thread_ts)
+            messages = result["messages"]
+            print(messages)
+
+            thread = preprocess_slack_thread(bot_id, messages)
+
+            print(thread)
+            
+        except Exception as e:
+            print("Error retrieving thread messages: {}".format(e))
+            return
 
         if len(thread) >= 4:
             # This is too long, not worth responding to
