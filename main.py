@@ -13,7 +13,7 @@ load_dotenv()  # take environment variables from .env.
 client = chromadb.Client()
 
 openai_ef = embedding_functions.OpenAIEmbeddingFunction(
-    api_key=os.environ.get("OPENAI_API_KEY"),
+    api_key=os.environ.get("OPENAI_TOKEN"),
     model_name="text-embedding-ada-002"
 )
 
