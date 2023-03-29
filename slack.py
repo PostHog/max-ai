@@ -107,7 +107,6 @@ def handle_message_events(body, logger, say):
         # try:
         result = app.client.conversations_replies(channel=event["channel"], ts=thread_ts)
         messages = result["messages"]
-        print(messages)
 
         thread = preprocess_slack_thread(bot_id, result)
 
@@ -116,6 +115,10 @@ def handle_message_events(body, logger, say):
         # except Exception as e:
         #     print("Error retrieving thread messages: {}".format(e))
         #     return
+
+        if "assistant" not in [msg["role"] for msg in thread]:
+            # we haven't responded and it's a thread, which meant the classification said no, so don't try to respond
+            return
 
         if len(thread) >= 4:
             # This is too long, not worth responding to
