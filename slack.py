@@ -143,7 +143,7 @@ def handle_app_mention_events(body, logger, say):
         response = ai_chat_thread(bot_id, thread)
         say(text=response, thread_ts=thread_ts)
     else:
-        say(text="Please mention me in a thread. I'm a little shy. :sleeping-hog:")
+        say(text="Hi there! :posthog-happy: I'm Max, Your friendly PostHog support AI. How can I help?", thread_ts=event["ts"])
 
 
 # Start your app
