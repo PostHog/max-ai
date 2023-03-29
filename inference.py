@@ -11,6 +11,9 @@ prompt = """
 
 You are an assistant that answers users questions. You aim to be as helpful as possible, and only use the information provided below to
 answer the questions.
+
+If the information is not enough, you can ask the user for more information. You can ask at most 2 questions.
+
 These are all the documents we know of:
 
 Feature Flags
@@ -18,14 +21,6 @@ Feature Flags
 Feature Flags enable you to safely deploy and roll back new features. This means you can ship the code for new features and roll it out to your users in a managed way. If something goes wrong, you can roll back without having to re-deploy your application.
 
 Feature Flags also help you control access to certain parts of your product, such as only showing paid features to users with an active subscription.
-
-
-Creating feature flags
-In the PostHog app sidebar, go to 'Feature Flags' and click 'New feature flag'.
-
-Think of a descriptive name and select how you want to roll out your feature.
-
-Create feature flags
 
 
 Implementing the feature flag
@@ -46,6 +41,7 @@ What you do inside that if statement is up to you. You might change the CSS of a
 
 
 Ensuring flags are loaded before usage
+
 Every time a user loads a page we send a request in the background to an endpoint to get the feature flags that apply to that user. In the client, we store those flags as a cookie.
 
 This means that for most page views the feature flags will be available immediately, except for the first time a user visits.
@@ -62,6 +58,7 @@ posthog.onFeatureFlags(function () {
 })
 
 Persisting feature flags across authentication steps
+
 You have an option to persist flags across authentication steps.
 
 Consider this case: An anonymous person comes to your website and you use a flag to show them a green call to action.
@@ -132,6 +129,7 @@ posthog.init('sTMFPsFhdP1Ssg', {
 })
 
 Forcing feature flags to update
+
 In our client-side JavaScript library, we store flags as a cookie to reduce the load on the server and improve the performance of your app. This prevents always needing to make an HTTP request, flag evaluation can simply refer to data stored locally in the browser. This is known as 'local evaluation.'
 
 While this makes your app faster, it means if your user does something mid-session which causes the flag to turn on for them, this does not immediately update. As such, if you expect your app to have scenarios like this and you want flags to update mid-session, you can reload them yourself, by using the reloadFeatureFlags function.
@@ -139,10 +137,12 @@ While this makes your app faster, it means if your user does something mid-sessi
 JavaScript
 
 posthog.reloadFeatureFlags()
+
 Calling this function forces PostHog to hit the endpoint for the updated information, and ensures changes are reflected mid-session.
 
 
 Server-side local evaluation
+
 If you're using our server-side libraries, you can use local evaluation to improve performance instead of making additional API requests. This requires:
 
 knowing and passing in all the person or group properties the flag relies on
@@ -166,10 +166,6 @@ await client.getFeatureFlag(
 This works for getAllFlags as well. It evaluates all flags locally if possible, and if not, falls back to making a decide HTTP request.
 
 Node.js
-PHP
-Go
-Python
-Ruby
 
 await client.getAllFlags('distinct id', {
     groups: {},
@@ -179,6 +175,7 @@ await client.getAllFlags('distinct id', {
 // returns dict of flag key and value pairs.
 
 Using locally
+
 To test feature flags locally, you can open your developer tools and override the feature flags. You will get a warning that you're manually overriding feature flags.
 
 JavaScript
@@ -357,20 +354,234 @@ And that's all! You should be good to run any experiment you want with these cha
 
 ---
 
-The question you have to answer is:
+Feature Flags Posthog-js SDK
 
-Any recommended best practices for experiments/feature flags that mean we don't spam call the API endpoint every time a page is loaded?
-Save features into a cookie, then check if that flag is already set, possibly? But then are there cases where the value would change for a given user/distinctid?
+Here's how you can use them:
+
+Do something when the feature flags load:
+
+The argument callback(flags: string[]) will be called when the feature flags are loaded.
+
+In case the flags are already loaded, it'll be called immediately. Additionally, it will also be called when the flags are re-loaded e.g. after calling identify or reloadFeatureFlags.
+
+JavaScript
+
+posthog.onFeatureFlags(callback)
+Check if a feature is enabled:
+JavaScript
+
+posthog.isFeatureEnabled('keyword')
+Trigger a reload of the feature flags:
+JavaScript
+
+posthog.reloadFeatureFlags()
+By default, this function will send a $feature_flag_called event to your instance every time it's called so you're able to do analytics. You can disable this by passing the send_event property:
+JavaScript
+
+posthog.isFeatureEnabled('keyword', { send_event: false })
+
+Feature Flag Payloads
+Payloads allow you to retrieve a value that is associated with the matched flag. The value can be a string, boolean, number, dictionary, or array. This allows for custom configurations based on values defined in the posthog app.
+
+JavaScript
+
+posthog.getFeatureFlagPayload('keyword')
+
+Bootstrapping Flags
+There is a delay between loading the library and feature flags becoming available to use. For some cases, like redirecting users to a different page based on a feature flag, this is extremely detrimental, as the flags load after the redirect logic occurs, thus never working.
+
+In cases like these, where you want flags to be immediately available on page load, you can use the bootstrap library option.
+
+This allows you to pass in a distinctID and feature flags during library initialisation, like so:
+
+JavaScript
+
+posthog.init('sTMFPsFhdP1Ssg', {
+    api_host: 'https://app.posthog.com',
+    bootstrap: {
+        distinctID: 'your-anonymous-id',
+        featureFlags: {
+            'flag-1': true,
+            'variant-flag': 'control',
+            'other-flag': false,
+        },
+    },
+})
+To compute these flag values, use the corresponding getAllFlags method in your server-side library. Note that bootstrapping flags requires server-side initialisation.
+
+If the ID you're passing in is an identified ID (that is, an ID with which you've called posthog.identify() elsewhere), you can also pass in the isIdentifiedID bootstrap option, which ensures that this ID is treated as an identified ID in the library. This is helpful as it warns you when you try to do something wrong with this ID, like calling identify again.
+
+JavaScript
+
+posthog.init('sTMFPsFhdP1Ssg', {
+    api_host: 'https://app.posthog.com',
+    bootstrap: {
+        distinctID: 'your-identified-id',
+        isIdentifiedID: true,
+        featureFlags: {
+            'flag-1': true,
+            'variant-flag': 'control',
+            'other-flag': false,
+        },
+    },
+})
+Note: Passing in a distinctID to bootstrap replaces any existing IDs, which means you may fail to connect any old anonymous user events with the logged in person, if your logic calls identify in the frontend immediately on login. In this case, you can omit passing in the distinctID.
+
+---
+
+Feature flags Posthog-node SDK
+
+PostHog's feature flags enable you to safely deploy and roll back new features.
+
+When using them with one of libraries, you should check if a feature flag is enabled and use the result to toggle functionality on and off in you application.
+
+How to check if a flag is enabled
+
+Note: Whenever we face an error computing the flag, the library returns undefined, instead of true, false, or a string variant value.
+
+Node.js
+
+// isFeatureEnabled(key: string, distinctId: string, options: {}): Promise<boolean | undefined>
+const isMyFlagEnabledForUser = await client.isFeatureEnabled('flag-key', 'user distinct id')
+
+if (isMyFlagEnabledForUser) {
+    // Do something differently for this user
+}
+Get a flag value
+
+If you're using multivariate feature flags, you can also get the value of the flag, as well as whether or not it is enabled.
+
+Note: Whenever we face an error computing the flag, the library returns None, instead of true or false or a string variant value.
+
+Node.js
+
+// getFeatureFlag(key: string, distinctId: string, options: {}): Promise<string | boolean | undefined>
+const flagValue = await client.getFeatureFlag('flag-key', 'user distinct id')
+Get a flag payload
+
+Posthog Node v2.3.0 introduces feature flag payloads. Feature flags can be returned with matching payloads which are JSONType (string, number, boolean, dictionary, array) values. This allows for custom configurations based on values defined in the posthog app.
+
+Note: getFeatureFlag does not need to be called prior to getFeatureFlagPayload. getFeatureFlagPayload will implicitly perform getFeatureFlag to determine the matching flag and return the corresponding payload.
+
+Node.js
+
+// getFeatureFlagPayload(key: string, distinctId: string, matchValue?: string | boolean, options: {}): Promise<JsonType | undefined>
+const flagPayload = await client.getFeatureFlagPayload('flag-key', 'user distinct id')
+Overriding server properties
+
+Sometimes, you might want to evaluate feature flags using properties that haven't been ingested yet, or were set incorrectly earlier. You can do so by setting properties the flag depends on with these calls.
+
+For example, if the beta-feature depends on the is_authorized property, and you know the value of the property, you can tell PostHog to use this property, like so:
+
+Node.js
+
+// getFeatureFlag(
+//    key: string,
+//    distinctId: string,
+//    options?: {
+//      groups?: Record<string, string>
+//      personProperties?: Record<string, string>
+//      groupProperties?: Record<string, Record<string, string>>
+//      onlyEvaluateLocally?: boolean
+//      sendFeatureFlagEvents?: boolean
+//    }
+//  ): Promise<string | boolean | undefined>
+const flagValue = await client.getFeatureFlag('flag-key', 'user distinct id', {
+    personProperties: { is_authorized: true },
+})
+The same holds for groups. If you have a group named organisation, you can add properties like so:
+
+Node.js
+
+const flagValue = await client.getFeatureFlag('flag-key', 'user distinct id', {groups:{'organisation': 'google'}, groupProperties:{'organisation': {'is_authorized': True}})
+Getting all flag values
+
+You can also get all known flag values as well. This is useful when you want to seed a frontend client with initial known flags. Like all methods above, this also takes optional person and group properties, if known.
+
+Node.js
+
+await client.getAllFlags('distinct id', { groups: {}, personProperties: { is_authorized: True }, groupProperties: {} })
+// returns dict of flag key and value pairs.
+
+Local Evaluation
+Note: To enable local evaluation of feature flags you must also set a personal_api_key when configuring the integration, as described in the Installation section.
+
+Note: This feature requires version 2.0 of the library, which in turn requires a minimum PostHog version of 1.38
+
+All feature flag evaluation requires an API request to your PostHog servers to get a response. However, where latency matters, you can evaluate flags locally. This is much faster, and requires two things to work:
+
+The library must be initialised with a personal API key
+You must know all person or group properties the flag depends on.
+Then, the flag can be evaluated locally. The method signature looks exactly like above.
+
+Node.js
+
+await client.getFeatureFlag('beta-feature', 'distinct id', { personProperties: { is_authorized: True } })
+// returns string or None
+Note: New feature flag definitions are polled every 30 seconds by default, which means there will be up to a 30 second delay between you changing the flag definition, and it reflecting on your servers. You can change this default on the client by setting featureFlagsPollingInterval during client initialisation.
+
+This works for getAllFlags as well. It evaluates all flags locally if possible. If even one flag isn't locally evaluable, it falls back to decide.
+
+Node.js
+
+await client.getAllFlags('distinct id', { groups: {}, personProperties: { is_authorized: True }, groupProperties: {} })
+// returns dict of flag key and value pairs.
+Restricting evaluation to local only
+
+Sometimes, performance might matter to you so much that you never want an HTTP request roundtrip delay when computing flags. In this case, you can set the only_evaluate_locally parameter to true, which tries to compute flags only with the properties it has. If it fails to compute a flag, it returns None, instead of going to PostHog's servers to get the value.
+
+Cohort expansion
+
+To support feature flags that depend on cohorts locally as well, we translate the cohort definition into person properties, so that the person properties you set can be used to evaluate cohorts as well.
+
+However, there are a few constraints here and we don't support doing this for arbitrary cohorts. Cohorts won't be evaluated locally if:
+
+They have non-person properties
+There's more than one cohort in the feature flag definition.
+The cohort in the feature flag is in the same group as another condition.
+The cohort has nested AND-OR filters. Only simple cohorts that have a top level OR group, and inner level ANDs will be evaluated locally.
+Note that this restriction is for local evaluation only. If you're hitting PostHog's servers, all of these cohorts will be evaluated as expected. Further, posthog-node v2.6.0 onwards, and posthog-python v2.4.0 onwards do not face this issue and can evaluate all cohorts locally.
+
+
+Reloading feature flags
+When initializing PostHog, you can configure the interval at which feature flags are polled (fetched from the server). However, if you need to force a reload, you can use reloadFeatureFlags:
+
+Node.js
+
+await client.reloadFeatureFlags()
+
+// Do something with feature flags here
+
+---
+
+The question you have to answer is:
 
 """
 
-def get_response(prompt):
-  return openai.ChatCompletion.create(
+
+prompt_1 = """Any recommended best practices for experiments/feature flags that mean we don't spam call the API endpoint every time a page is loaded? Save features into a cookie, then check if that flag is already set, possibly?
+But then are there cases where the value would change for a given user/distinctid?
+"""
+
+prompt_2 = """
+Hey all, I'm trying to do AB testing on our marketing homepage using posthog. I have JS that updates the actual page.
+However, the feature flag isn't loaded early enough. I know the docs mentioned an issue, but I found them confusing. Can anyone help?
+"""
+
+prompt_3 = """
+My feature flags are not working, how do I fix this?
+"""
+
+
+def get_response(prompt, suffix=""):
+  api_response = openai.ChatCompletion.create(
     model="gpt-4",
     messages=[
           {"role": "system", "content": "You are a helpful assistant that answers user queries."},
-          {"role": "user", "content": prompt},
+          {"role": "user", "content": prompt + suffix},
       ]
   )
 
-print(get_response(prompt))
+  return api_response["choices"][0]["message"]["content"]
+
+print(get_response(prompt, prompt_3))
