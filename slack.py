@@ -6,8 +6,8 @@ import openai
 
 from dotenv import load_dotenv
 from slack_bolt import App
-from sqlalchemy.orm import Column, DeclarativeBase, String
-from sqlalchemy import create_engine
+from sqlalchemy.orm import DeclarativeBase
+from sqlalchemy import create_engine, String, Column
 
 
 load_dotenv()
