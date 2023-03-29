@@ -6,7 +6,6 @@ import openai
 from dotenv import load_dotenv
 from slack_bolt import App
 
-MAX_AI_USERNAME = 'max-ai'
 
 load_dotenv()
 
@@ -86,17 +85,14 @@ def summarize_thread(thread):
     return completion.choices[0].message.content
 
 
-def ai_chat_thread(thread):
+def ai_chat_thread(bot_id, thread):
     prompt = f"{thread}"
     print(thread)
-    thread = [{'user': msg['user'], 'message': msg['text']} for msg in thread['messages']]
-    user_ids = [msg['user'] for msg in thread]
-    users = {user_id: app.client.users_info(user=user_id) for user_id in user_ids }
-    roles = {user_id: 'assistant' if user == MAX_AI_USERNAME else 'user' for user_id, user in users.items()}
+    history = [{"role": "assistant" if user == bot_id else "user", "content": msg} for user, msg in thread]
     completion = openai.ChatCompletion.create(
         model="gpt-3.5-turbo", messages=[
                 {"role": "system", "content": "You are the trusty PostHog support bot on Slack named Max. Please continue the conversation in a way that is helpful to the user and also makes the user feel like they are talking to a human."},
-                *[{"role": roles[user_id], "content": msg} for user_id, msg in thread],
+                *history,
                 {"role": "user", "content": prompt}
         ]
     )
@@ -126,6 +122,7 @@ def handle_message_events(body, logger, say):
 def handle_app_mention_events(body, logger, say):
     logger.info(body)
     print(body)
+    bot_id = body['authorizations']['user_id']
     event = body["event"]
     if "thread_ts" in event:
         thread_ts = event["thread_ts"]
@@ -138,7 +135,7 @@ def handle_app_mention_events(body, logger, say):
             summary = summarize_thread(thread)
             say(text=summary, thread_ts=thread_ts)
             return
-        response = ai_chat_thread(thread)
+        response = ai_chat_thread(bot_id, thread)
         say(text=response, thread_ts=thread_ts)
 
 
