@@ -27,7 +27,7 @@ app = App(
 
 ## Models
 
-engine = create_engine("sqlite://chats.sqlite", echo=True)
+engine = create_engine("sqlite:///chats.sqlite", echo=True)
 
 class Base(DeclarativeBase):
     __abstract__ = True
