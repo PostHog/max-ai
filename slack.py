@@ -4,7 +4,7 @@ import openai
 from dotenv import load_dotenv
 from slack_bolt import App
 from classification import classify_question
-from inference import get_response
+from inference import get_query_response
 
 from ai import ai_chat_thread, summarize_thread
 
@@ -91,18 +91,33 @@ def handle_message_events(body, logger, say):
         thread = preprocess_slack_thread(bot_id, thread)
         response = ai_chat_thread(thread)
         say(response)
+
+    # new message in a public channel
     elif "thread_ts" not in event and event["type"] == "message" and event["channel_type"] == "channel":
-        thread = app.client.conversations_history(channel=event["channel"], limit=5)
-        print(thread)
         follow_up = classify_question(event["text"])
 
         if follow_up:
-            response = get_response(event["text"])
-            say(response)
-        
+            response = get_query_response(event["text"])
+            say(text=response, thread_ts=event["ts"])
         return
+    # thread response in a public channel
     elif "thread_ts" in event and event["channel_type"] == "channel":
-        print("thread response, decide to continue or not based on whether bot interacted previously and limit history")
+        thread = app.client.conversations_history(channel=event["channel"], limit=7)
+
+        if len(thread) >= 4:
+            # This is too long, not worth responding to
+            return
+
+        thread = preprocess_slack_thread(bot_id, thread)
+        if thread[-1]["role"] == "assistant":
+            # we just responded, don't respond to ourselves
+            return
+        
+        # get first message in thread
+        question = thread[0]["content"]
+        response = get_query_response(question, thread)
+
+        say(text=response, thread_ts=event["thread_ts"])
 
 
 

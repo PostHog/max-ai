@@ -355,6 +355,10 @@ And that's all! You should be good to run any experiment you want with these cha
 
 ---
 
+"""
+
+extended_prompt = """
+
 Feature Flags Posthog-js SDK
 
 Here's how you can use them:
@@ -555,6 +559,9 @@ await client.reloadFeatureFlags()
 
 ---
 
+"""
+
+suffix = """
 The question you have to answer is:
 
 """
@@ -579,10 +586,16 @@ class OpenAIModel(Enum):
   GPT_3_TURBO = "gpt-3.5-turbo"
 
 
-def get_response(question, follow_up_messages=None, model=OpenAIModel.GPT_3_TURBO.value):
+def get_query_response(question, follow_up_messages=None, model=OpenAIModel.GPT_3_TURBO.value):
+
+  if model == OpenAIModel.GPT_4.value:
+    full_prompt = prompt + extended_prompt + suffix + question
+  else:
+    full_prompt = prompt + suffix + question
+
   messages = [
     {"role": "system", "content": "You are a helpful assistant that answers user queries."},
-    {"role": "user", "content": question},
+    {"role": "user", "content": full_prompt},
   ]
 
   if follow_up_messages:
@@ -595,4 +608,5 @@ def get_response(question, follow_up_messages=None, model=OpenAIModel.GPT_3_TURB
 
   return api_response["choices"][0]["message"]["content"]
 
-# print(get_response(prompt, prompt_3))
+
+# print(get_query_response("I want to bootstrap flags, how do I do that?"))
