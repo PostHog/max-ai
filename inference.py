@@ -579,10 +579,10 @@ class OpenAIModel(Enum):
   GPT_3_TURBO = "gpt-3.5-turbo"
 
 
-def get_response(prompt, suffix="", follow_up_messages=None, model=OpenAIModel.GPT_3_TURBO):
+def get_response(question, follow_up_messages=None, model=OpenAIModel.GPT_3_TURBO.value):
   messages = [
     {"role": "system", "content": "You are a helpful assistant that answers user queries."},
-    {"role": "user", "content": prompt + suffix},
+    {"role": "user", "content": question},
   ]
 
   if follow_up_messages:
@@ -595,4 +595,4 @@ def get_response(prompt, suffix="", follow_up_messages=None, model=OpenAIModel.G
 
   return api_response["choices"][0]["message"]["content"]
 
-print(get_response(prompt, prompt_3))
+# print(get_response(prompt, prompt_3))

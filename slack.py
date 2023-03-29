@@ -4,6 +4,8 @@ import openai
 
 from dotenv import load_dotenv
 from slack_bolt import App
+from classification import classify_question
+from inference import get_response
 
 
 CHAT_HISTORY_LIMIT = "20"
@@ -122,6 +124,20 @@ def handle_message_events(body, logger, say):
         print(thread)
         response = ai_chat_thread(thread)
         say(response)
+    elif "thread_ts" not in event and event["type"] == "message" and event["channel_type"] == "channel":
+        thread = app.client.conversations_history(channel=event["channel"], limit=5)
+        print(thread)
+        follow_up = classify_question(event["text"])
+
+        if follow_up:
+            response = get_response(event["text"])
+            say(response)
+        
+        return
+    elif "thread_ts" in event and event["channel_type"] == "channel":
+        print("thread response, decide to continue or not based on whether bot interacted previously and limit history")
+
+
 
 
 @app.event("app_mention")
