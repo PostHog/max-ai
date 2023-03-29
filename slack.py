@@ -86,7 +86,9 @@ def summarize_thread(thread):
 
 
 def ai_chat_thread(thread):
-    prompt = f"""Continue the following conversation: {thread}"""
+    prompt = f"""You are a support bot on Slack named Max and having a conversation with a user with the history of the thread being: {thread}
+    Please continue the conversation in a way that is helpful to the user and also makes the user feel like they are talking to a human.
+    Respond with your next response in the persona as Max the support bot only."""
     completion = openai.ChatCompletion.create(
         model="gpt-3.5-turbo", messages=[{"role": "user", "content": prompt}]
     )
