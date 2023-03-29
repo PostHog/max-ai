@@ -365,7 +365,7 @@ Save features into a cookie, then check if that flag is already set, possibly? B
 
 """
 
-class OpenAIModel(enum):
+class OpenAIModel(Enum):
   GPT_4 = "gpt-4"
   GPT_3_TURBO = "gpt-3.5-turbo"
 
