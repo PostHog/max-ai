@@ -12,7 +12,6 @@ from haystack.nodes import OpenAIAnswerGenerator
 
 load_dotenv()  # take environment variables from .env.
 
-
 app = FastAPI()
 
 document_store = WeaviateDocumentStore(
