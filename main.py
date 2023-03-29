@@ -2,9 +2,8 @@ from dotenv import load_dotenv
 from typing import List
 from fastapi import FastAPI
 from pydantic import BaseModel
-import marko
-from marko.inline import RawText, StrongEmphasis as Strong, Emphasis, Link
 from .chroma import get_collection
+import re
 
 load_dotenv()  # take environment variables from .env.
 
@@ -20,15 +19,13 @@ class Entries(BaseModel):
 
 @app.post("/entries")
 def create_entries(entries: Entries):
-    posthog_collection = get_collection("posthog")
     for entry in entries.entries:
-        ps = extract_markdown_paragraphs(entry.rawBody)
-        for index, p in enumerate(ps):
-            if p:
-                posthog_collection.add(
-                    documents=[p],
-                    ids=[entry.id + f"-{index}"]
-                )
+        headings = split_markdown_sections(entry.rawBody)
+        for index, heading in enumerate(headings):
+            # count how many new lines are in the string
+            count = heading.count('\n')
+            if count > 0:
+                print(count)
 
     return []
 
@@ -42,27 +39,19 @@ def search_entries(query: str):
 
     return results
 
-def extract_markdown_paragraphs(markdown_str):
-    def to_markdown(element):
-        if isinstance(element, list):
-            return ''.join(to_markdown(child) for child in element)
-        elif isinstance(element, RawText):
-            return element.children
-        elif isinstance(element, Strong):
-            return f"**{to_markdown(element.children)}**"
-        elif isinstance(element, Emphasis):
-            return f"*{to_markdown(element.children)}*"
-        elif isinstance(element, Link):
-            return f"[{to_markdown(element.children)}]({element.dest})"
-        else:
-            return ''
+def split_markdown_sections(markdown_content):
+    header_pattern = re.compile(r"(^#+\s+.*$)", re.MULTILINE)
+    sections = []
 
-    marko_doc = marko.parse(markdown_str)
-    paragraphs = []
+    matches = list(header_pattern.finditer(markdown_content))
+    if not matches:
+        return [markdown_content]
 
-    for node in marko_doc.children:
-        if isinstance(node, marko.block.Paragraph):
-            markdown_paragraph = to_markdown(node.children)
-            paragraphs.append(markdown_paragraph)
+    for i, match in enumerate(matches[:-1]):
+        section_start = match.start()
+        section_end = matches[i + 1].start()
+        sections.append(markdown_content[section_start:section_end].strip())
 
-    return paragraphs
+    sections.append(markdown_content[matches[-1].start():].strip())
+
+    return sections
