@@ -6,7 +6,7 @@ import openai
 
 from dotenv import load_dotenv
 from slack_bolt import App
-from sqlalchemy.orm import Column, DeclarativeBase, String
+from sqlalchemy.orm import create_engine, Column, DeclarativeBase, String
 
 
 load_dotenv()
@@ -26,6 +26,7 @@ app = App(
 
 ## Models
 
+engine = create_engine("sqlite://chats.sqlite", echo=True)
 
 class Base(DeclarativeBase):
     __abstract__ = True
@@ -34,9 +35,12 @@ class Base(DeclarativeBase):
 
 class Chat(Base):
     __tablename__ = "chats"
-    id = Column(String, primary_key=True)
+    # slack, web, etc
+    chat_product = Column(String)
+    channel = Column(String)
     thread = Column(String)
-    summary = Column(String)
+    user = Column(String)
+
 
 
 # Add functionality here
