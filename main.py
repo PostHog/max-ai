@@ -1,13 +1,66 @@
+import os
 from dotenv import load_dotenv
 from typing import List
 from fastapi import FastAPI
 from pydantic import BaseModel
-from .chroma import get_collection
+from haystack import Document
+from haystack.document_stores.weaviate import WeaviateDocumentStore
+from haystack.pipelines import GenerativeQAPipeline
 import re
+from haystack.nodes import EmbeddingRetriever
+from haystack.nodes import OpenAIAnswerGenerator
 
 load_dotenv()  # take environment variables from .env.
 
+
 app = FastAPI()
+
+document_store = WeaviateDocumentStore(
+    embedding_dim=1024,
+    custom_schema={
+      "classes": [
+        {
+          "class": "Document",
+          "description": "A class called document",
+          "vectorizer": "text2vec-openai",
+          "moduleConfig": {
+            "text2vec-openai": {
+              "model": "ada",
+              "modelVersion": "002",
+              "type": "text"
+            }
+          },
+          "properties": [
+            {
+              "dataType": [
+                "text"
+              ],
+              "description": "Content that will be vectorized",
+              "moduleConfig": {
+                "text2vec-openai": {
+                  "skip": False,
+                  "vectorizePropertyName": False
+                }
+              },
+              "name": "content"
+            }
+          ]
+        }
+      ]
+    },
+    additional_headers={"X-OpenAI-Api-Key": os.getenv("OPENAI_API_KEY")},
+)
+
+retriever = EmbeddingRetriever(
+    document_store=document_store,
+    batch_size=16,
+    embedding_model="ada",
+    api_key=os.getenv("OPENAI_API_KEY"),
+    max_seq_len=1024,
+)
+
+
+generator = OpenAIAnswerGenerator(api_key=os.getenv("OPENAI_API_KEY"), max_tokens=1024)
 
 class Entry(BaseModel):
     id: str
@@ -19,25 +72,26 @@ class Entries(BaseModel):
 
 @app.post("/entries")
 def create_entries(entries: Entries):
-    collection = get_collection("posthog")
     for entry in entries.entries:
         headings = split_markdown_sections(entry.rawBody)
-        collection.add(
-            documents=headings,
-            ids=[entry.id + "-" + str(i) for i in range(len(headings))],
-        )
+
+        documents = [Document(content=doc) for doc in headings]
+        document_store.write_documents(documents, index="Document")
+
+    document_store.update_embeddings(retriever)
 
     return []
 
 @app.get("/search")
 def search_entries(query: str):
-    posthog_collection = get_collection("posthog")
-    results = posthog_collection.query(
-        query_texts=[query],
-        n_results=10,
-    )
+    pipeline = GenerativeQAPipeline(generator=generator, retriever=retriever)
 
-    return results
+    result = pipeline.run(query, params={"Retriever": {"top_k": 10}})
+
+    if result is None:
+        return []
+
+    return result["answers"]
 
 def split_markdown_sections(markdown_content):
     header_pattern = re.compile(r"(^#+\s+.*$)", re.MULTILINE)
