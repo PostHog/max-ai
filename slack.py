@@ -129,8 +129,8 @@ def handle_app_mention_events(body, logger, say):
     event = body["event"]
     if "thread_ts" in event:
         thread_ts = event["thread_ts"]
-        thread = app.client.conversations_replies(
-            channel=event["channel"], ts=thread_ts
+        thread = app.client.conversations_history(
+            channel=event["channel"], ts=thread_ts, limit=5
         )
         print(thread)
         if "please summarize this" in event["text"].lower():
