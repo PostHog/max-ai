@@ -77,31 +77,51 @@ def update_home_tab(client, event, logger):
 
 
 def summarize_thread(thread):
-  prompt = f"Please summarize the content or information in the following slack thread: {thread}"
+  prompt = f"""The following is a conversation in which the first person asks a question. Eventually, after the second person may ask some clairfying questions to gain more context, a solution may be reached.
+    There may be multiple questions and solutions in the conversation, but only quesitons from the initial person should be considered relevant - questions from other people are just for
+    clarifications about the first user's problem. Summarize each question and its solution succintly, excluding distinct user information but mostly just parsing out the relevant content,
+    the question that was asked in detail including important context, and the eventual solution. If no solution seems to have been reached, say 'contact PostHog support'.
+    Respond in the format of:
+    Question: <question>
+    Solution: <solution>
+    Here is the conversation: {thread}"""
   completion = openai.ChatCompletion.create(model="gpt-3.5-turbo",
                                             messages=[{"role": "user", "content": prompt}])
   return completion.choices[0].message.content
 
 
-@app.event("message")
-def handle_message_events(body, logger, say):
-  logger.info(body)
+@app.command("summarize")
+def handle_summarize_slash_command(ack, say, command):
+  ack()
   event = body["event"]
   if "thread_ts" in event:
     thread_ts = event["thread_ts"]
     thread = app.client.conversations_replies(channel=event["channel"], ts=thread_ts)
+    thread = [(msg['user'], msg['text']) for msg in thread['messages']] 
     if event['text'].lower() in "please summarize this":
       summary = summarize_thread(thread)
       say(text=summary, thread_ts=thread_ts)
 
+
+@app.event("message")
+def handle_message_events(body, logger, say):
+  logger.info(body)
+
+
 @app.event("app_mention")
 def handle_app_mention_events(body, logger, say):
-        logger.info(body)
-        event = body["event"] 
+  logger.info(body)
+  event = body["event"]
+  print(event) 
+  if "thread_ts" in event:
+    thread_ts = event["thread_ts"]
+    thread = app.client.conversations_replies(channel=event["channel"], ts=thread_ts)
+    print(thread) 
+    thread = [(msg['user'], msg['text']) for msg in thread['messages']] 
+    if "please summarize this" in event['text'].lower():
+      summary = summarize_thread(thread)
+      say(text=summary, thread_ts=thread_ts)
 
-        thread_ts = event.get("thread_ts", None) or event["ts"]
-
-        say(text="hi there! :wave:", thread_ts=thread_ts)
 
 
 # Start your app
