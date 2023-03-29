@@ -6,6 +6,7 @@ import openai
 from dotenv import load_dotenv
 from slack_bolt import App
 
+MAX_AI_USERNAME = 'max-ai'
 
 load_dotenv()
 
@@ -86,11 +87,18 @@ def summarize_thread(thread):
 
 
 def ai_chat_thread(thread):
-    prompt = f"""You are a support bot on Slack named Max and having a conversation with a user with the history of the thread being: {thread}
-    Please continue the conversation in a way that is helpful to the user and also makes the user feel like they are talking to a human.
-    Respond with your next response in the persona as Max the support bot only."""
+    prompt = f"{thread}"
+    print(thread)
+    thread = [{'user': msg['user'], 'message': msg['text']} for msg in thread['messages']]
+    user_ids = [msg['user'] for msg in thread]
+    users = {user_id: app.client.users_info(user=user_id) for user_id in user_ids }
+    roles = {user_id: 'assistant' if user == MAX_AI_USERNAME else 'user' for user_id, user in users.items()}
     completion = openai.ChatCompletion.create(
-        model="gpt-3.5-turbo", messages=[{"role": "user", "content": prompt}]
+        model="gpt-3.5-turbo", messages=[
+                {"role": "system", "content": "You are the trusty PostHog support bot on Slack named Max. Please continue the conversation in a way that is helpful to the user and also makes the user feel like they are talking to a human."},
+                *[{"role": roles[user_id], "content": msg} for user_id, msg in thread],
+                {"role": "user", "content": prompt}
+        ]
     )
     return completion.choices[0].message.content
 
@@ -108,20 +116,9 @@ def handle_message_events(body, logger, say):
     print(event_type)
     if event_type == "im":
         thread = app.client.conversations_history(channel=event["channel"], limit=5)
-        thread = [{'user': msg['user'], 'message': msg['text']} for msg in thread['messages']]
         print(thread)
         response = ai_chat_thread(thread)
         say(response)
-    if "thread_ts" in event:
-      thread_ts = event["thread_ts"]
-      thread = app.client.conversations_replies(channel=event["channel"], limit=5, ts=thread_ts)
-      thread = [{'user': msg['user'], 'message': msg['text']} for msg in thread['messages']]
-      if "please summarize this" in event['text'].lower():
-        summary = summarize_thread(thread)
-        say(text=summary, thread_ts=thread_ts)
-        return
-      response = ai_chat_thread(thread)
-      say(text=response, thread_ts=thread_ts)
 
 
 
@@ -136,12 +133,13 @@ def handle_app_mention_events(body, logger, say):
             channel=event["channel"], ts=thread_ts
         )
         print(thread)
-        thread = [(msg["user"], msg["text"]) for msg in thread["messages"]]
         if "please summarize this" in event["text"].lower():
             say(text="On it!", thread_ts=thread_ts)
             summary = summarize_thread(thread)
             say(text=summary, thread_ts=thread_ts)
-
+            return
+        response = ai_chat_thread(thread)
+        say(text=response, thread_ts=thread_ts)
 
 
 # Start your app
