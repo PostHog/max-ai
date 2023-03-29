@@ -103,12 +103,13 @@ def handle_message_events(body, logger, say):
     # thread response in a public channel
     elif "thread_ts" in event and event["channel_type"] == "channel":
         thread = app.client.conversations_history(channel=event["channel"], limit=7)
+        thread = preprocess_slack_thread(bot_id, thread)
+        print(thread)
 
         if len(thread) >= 4:
             # This is too long, not worth responding to
             return
 
-        thread = preprocess_slack_thread(bot_id, thread)
         if thread[-1]["role"] == "assistant":
             # we just responded, don't respond to ourselves
             return

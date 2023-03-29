@@ -628,4 +628,4 @@ def get_query_response(question, follow_up_messages=None, model=OpenAIModel.GPT_
   return api_response["choices"][0]["message"]["content"]
 
 
-print(get_query_response("I want to bootstrap flags, how do I do that?"))
+# print(get_query_response("I want to bootstrap flags, how do I do that?"))
