@@ -1,23 +1,12 @@
-import os
 from dotenv import load_dotenv
 from typing import List
 from fastapi import FastAPI
 from pydantic import BaseModel
 import marko
 from marko.inline import RawText, StrongEmphasis as Strong, Emphasis, Link
-from chromadb.utils import embedding_functions
-import chromadb
+from .chroma import get_collection
 
 load_dotenv()  # take environment variables from .env.
-
-client = chromadb.Client()
-
-openai_ef = embedding_functions.OpenAIEmbeddingFunction(
-    api_key=os.environ.get("OPENAI_API_KEY"),
-    model_name="text-embedding-ada-002"
-)
-
-collection = client.create_collection("posthog", embedding_function=openai_ef)
 
 app = FastAPI()
 
@@ -31,11 +20,12 @@ class Entries(BaseModel):
 
 @app.post("/entries")
 def create_entries(entries: Entries):
+    posthog_collection = get_collection("posthog")
     for entry in entries.entries:
         ps = extract_markdown_paragraphs(entry.rawBody)
         for index, p in enumerate(ps):
             if p:
-                collection.add(
+                posthog_collection.add(
                     documents=[p],
                     ids=[entry.id + f"-{index}"]
                 )
@@ -44,13 +34,13 @@ def create_entries(entries: Entries):
 
 @app.get("/search")
 def search_entries(query: str):
-    results = collection.query(
+    posthog_collection = get_collection("posthog")
+    results = posthog_collection.query(
         query_texts=[query],
         n_results=10,
     )
 
     return results
-
 
 def extract_markdown_paragraphs(markdown_str):
     def to_markdown(element):
