@@ -5,7 +5,8 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 from haystack import Document
 from haystack.document_stores.weaviate import WeaviateDocumentStore
-from haystack.pipelines import GenerativeQAPipeline
+from haystack.pipelines import Pipeline
+from haystack.nodes import PromptModel, PromptNode
 import re
 from haystack.nodes import EmbeddingRetriever
 from haystack.nodes import OpenAIAnswerGenerator
@@ -62,6 +63,7 @@ retriever = EmbeddingRetriever(
 generator = OpenAIAnswerGenerator(
     api_key=os.getenv("OPENAI_TOKEN"),
     model="gpt-3.5-turbo",
+    top_k=1,
     max_tokens=1024
 )
 
@@ -87,7 +89,13 @@ def create_entries(entries: Entries):
 
 @app.get("/search")
 def search_entries(query: str):
-    pipeline = GenerativeQAPipeline(generator=generator, retriever=retriever)
+    pipeline = Pipeline()
+
+    prompt_model = PromptModel("gpt-3.5-turbo", api_key=os.getenv("OPENAI_TOKEN"))
+    prompt_node = PromptNode(prompt_model)
+
+    pipeline.add_node(component=retriever, name="Retriever", inputs=["Query"])
+    pipeline.add_node(component=prompt_node, name="Generator", inputs=["Retriever"])
 
     result = pipeline.run(query, params={"Retriever": {"top_k": 5}})
 
@@ -112,3 +120,4 @@ def split_markdown_sections(markdown_content):
     sections.append(markdown_content[matches[-1].start():].strip())
 
     return sections
+

@@ -1,23 +1,17 @@
 import os
 
 import openai
-
 from dotenv import load_dotenv
 from slack_bolt import App
 from classification import classify_question
 from inference import get_response
 
+from ai import ai_chat_thread, summarize_thread
+
 
 CHAT_HISTORY_LIMIT = "20"
 
 load_dotenv()
-
-## Initialize OpenAI
-openai.api_key = os.environ.get("OPENAI_TOKEN")
-models = [m.id for m in openai.Model.list()["data"]]
-print(f"Available models: {', '.join(models)}")
-
-## "gpt-4" and "gpt-3.5-turbo" are the two we'll use here
 
 # Initializes your app with your bot token and signing secret
 app = App(
@@ -73,39 +67,10 @@ def update_home_tab(client, event, logger):
         logger.error(f"Error publishing home tab: {e}")
 
 
-def summarize_thread(thread):
-    prompt = f"""The following is a conversation in which the first person asks a question. Eventually, after the second person may ask some clairfying questions to gain more context, a solution may be reached.
-    There may be multiple questions and solutions in the conversation, but only quesitons from the initial person should be considered relevant - questions from other people are just for
-    clarifications about the first user's problem. Summarize each question and its solution succintly, excluding distinct user information but mostly just parsing out the relevant content,
-    the question that was asked in detail including important context, and the eventual solution. If no solution seems to have been reached, say 'contact PostHog support'.
-    Respond in the format of:
-    Question: <question>
-    Solution: <solution>
-    Here is the conversation: {thread}"""
-    completion = openai.ChatCompletion.create(
-        model="gpt-3.5-turbo", messages=[{"role": "user", "content": prompt}]
-    )
-    return completion.choices[0].message.content
-
-
-def ai_chat_thread(bot_id, thread):
-    SYSTEM_PROMPT = """
-    You are the trusty PostHog support bot on Slack named Max.
-    Please continue the conversation in a way that is helpful to the user and also makes the user feel like they are talking to a human.
-    Only suggest using PostHog products and services. Do not suggest products or services from other companies.
-    """
-    prompt = f"{thread}"
-    print(thread)
+def preprocess_slack_thread(bot_id, thread):
     thread = [(msg["user"], msg["text"]) for msg in thread["messages"]]
     history = [{"role": "assistant" if user == bot_id else "user", "content": msg} for user, msg in thread]
-    completion = openai.ChatCompletion.create(
-        model="gpt-3.5-turbo", messages=[
-                {"role": "system", "content": SYSTEM_PROMPT},
-                *history,
-                {"role": "user", "content": prompt}
-        ]
-    )
-    return completion.choices[0].message.content
+    return history
 
 
 @app.command("/summarize")
@@ -118,10 +83,12 @@ def handle_summarize_slash_command(ack, say, command):
 def handle_message_events(body, logger, say):
     event_type = body["event"]["channel_type"]
     event = body["event"]
+    bot_id = body['authorizations'][0]['user_id']
     print(event_type)
     if event_type == "im":
         thread = app.client.conversations_history(channel=event["channel"], limit=CHAT_HISTORY_LIMIT)
         print(thread)
+        thread = preprocess_slack_thread(bot_id, thread)
         response = ai_chat_thread(thread)
         say(response)
     elif "thread_ts" not in event and event["type"] == "message" and event["channel_type"] == "channel":
@@ -156,10 +123,11 @@ def handle_app_mention_events(body, logger, say):
             summary = summarize_thread(thread)
             say(text=summary, thread_ts=thread_ts)
             return
-        response = ai_chat_thread(bot_id, thread)
+        thread = preprocess_slack_thread(bot_id, thread)
+        response = ai_chat_thread(thread)
         say(text=response, thread_ts=thread_ts)
     else:
-        say(text="Please mention me in a thread. I'm a little shy. :sleeping-hog:")
+        say(text="Hi there! :posthog-happy: I'm Max, Your friendly PostHog support AI. How can I help?", thread_ts=event["ts"])
 
 
 # Start your app
