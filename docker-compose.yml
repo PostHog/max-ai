@@ -3,6 +3,8 @@ services:
   weaviate:
     image: semitechnologies/weaviate:1.18.2
     restart: on-failure:0
+    volumes:
+      - /var/weaviate:/var/lib/weaviate
     ports:
      - "8080:8080"
     environment:
