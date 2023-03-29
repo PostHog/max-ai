@@ -1,13 +1,10 @@
 import os
-import logging
-from typing import Optional
+import sqlite3
 
 import openai
 
 from dotenv import load_dotenv
 from slack_bolt import App
-from sqlalchemy.orm import DeclarativeBase
-from sqlalchemy import create_engine, String, Column
 
 
 load_dotenv()
@@ -24,24 +21,6 @@ app = App(
     token=os.environ.get("SLACK_BOT_TOKEN"),
     signing_secret=os.environ.get("SLACK_SIGNING_SECRET"),
 )
-
-## Models
-
-engine = create_engine("sqlite:///chats.sqlite", echo=True)
-
-class Base(DeclarativeBase):
-    __abstract__ = True
-    id = Column(String, primary_key=True)
-
-
-class Chat(Base):
-    __tablename__ = "chats"
-    # slack, web, etc
-    chat_product = Column(String)
-    channel = Column(String)
-    thread = Column(String)
-    user = Column(String)
-
 
 
 # Add functionality here
@@ -106,6 +85,14 @@ def summarize_thread(thread):
     return completion.choices[0].message.content
 
 
+def ai_chat_thread(thread):
+    prompt = f"""Continue the following conversation: {thread}"""
+    completion = openai.ChatCompletion.create(
+        model="gpt-3.5-turbo", messages=[{"role": "user", "content": prompt}]
+    )
+    return completion.choices[0].message.content
+
+
 @app.command("/summarize")
 def handle_summarize_slash_command(ack, say, command):
     ack()
@@ -114,20 +101,21 @@ def handle_summarize_slash_command(ack, say, command):
 
 @app.event("message")
 def handle_message_events(body, logger, say):
-    print("~~~~~~~~~hi~~~~")
     event_type = body["event"]["channel_type"]
+    event = body["event"]
     print(event_type)
     if event_type == "im":
-        say("Hi there! I love direct messages")
-    # event = body["event"]
-    # if "thread_ts" in event:
-    #   thread_ts = event["thread_ts"]
-    #   thread = app.client.conversations_replies(channel=event["channel"], ts=thread_ts)
-    #   print(thread)
-    #   thread = [(msg['user'], msg['text']) for msg in thread['messages']]
-    #   if "please summarize this" in event['text'].lower():
-    #     summary = summarize_thread(thread)
-    #     say(text=summary, thread_ts=thread_ts)
+        thread = app.client.conversations_replies(channel=event["channel"], ts=event["ts"])
+        print(thread)
+        response = ai_chat_thread(thread)
+        say(response)
+    if "thread_ts" in event:
+      thread_ts = event["thread_ts"]
+      thread = app.client.conversations_replies(channel=event["channel"], ts=thread_ts)
+      thread = [(msg['user'], msg['text']) for msg in thread['messages']]
+      if "please summarize this" in event['text'].lower():
+        summary = summarize_thread(thread)
+        say(text=summary, thread_ts=thread_ts)
 
 
 @app.event("app_mention")
