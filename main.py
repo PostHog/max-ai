@@ -5,8 +5,8 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 from haystack import Document
 from haystack.document_stores.weaviate import WeaviateDocumentStore
-from haystack.pipelines import Pipeline
-from haystack.nodes import PromptModel, PromptNode
+from haystack.pipelines import Pipeline, GenerativeQAPipeline
+from haystack.nodes import PromptTemplate, PromptModel, PromptNode, Shaper
 import re
 from haystack.nodes import EmbeddingRetriever
 from haystack.nodes import OpenAIAnswerGenerator
@@ -59,17 +59,9 @@ retriever = EmbeddingRetriever(
     batch_size=16,
     embedding_model="ada",
     api_key=os.getenv("OPENAI_TOKEN"),
-    max_seq_len=1024,
+    max_seq_len=2048,
 )
 
-
-# generator = OpenAIAnswerGenerator(
-#     api_key=os.getenv("OPENAI_TOKEN"),
-#     model="gpt-3.5-turbo",
-#     top_k=1,
-#     max_tokens=1024
-# )
- 
 class Entry(BaseModel):
     id: str
     slug: str
@@ -105,18 +97,26 @@ def chat(messages: List[Message]):
 def search_entries(query: str):
     pipeline = Pipeline()
 
+    prompt_template = PromptTemplate(
+        name="question-answering-with-examples",
+        prompt_text="Please answer the question according to the following context."
+        "\n===\nContext: {documents}\n===\n{query}",
+            )
+
     prompt_model = PromptModel("gpt-3.5-turbo", api_key=os.getenv("OPENAI_TOKEN"))
-    prompt_node = PromptNode(prompt_model)
+    prompt_node = PromptNode(prompt_model, output_variable="answer", default_prompt_template=prompt_template)
 
-    pipeline.add_node(component=retriever, name="Retriever", inputs=["Query"])
-    pipeline.add_node(component=prompt_node, name="Generator", inputs=["Retriever"])
+    shaper = Shaper(func="join_documents", inputs={"documents": "documents"}, outputs=["documents"])
 
-    result = pipeline.run(query, params={"Retriever": {"top_k": 5}})
+    pipeline.add_node(retriever, name="Retriever", inputs=["Query"])
+    pipeline.add_node(shaper, name="Shaper", inputs=["Retriever"])
+    pipeline.add_node(component=prompt_node, name="PromptNode", inputs=["Shaper"])
+    result = pipeline.run(query=query, params={"Retriever": {"top_k": 5}}, debug=True)
 
     if result is None:
         return []
 
-    return result["answers"]
+    return result
 
 def split_markdown_sections(markdown_content):
     header_pattern = re.compile(r"(^#+\s+.*$)", re.MULTILINE)
