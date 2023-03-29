@@ -98,7 +98,7 @@ def handle_message_events(body, logger, say):
 
         if follow_up:
             response = get_response(event["text"])
-            say(response)
+            say(text=response, thread_ts=event["ts"])
         
         return
     elif "thread_ts" in event and event["channel_type"] == "channel":

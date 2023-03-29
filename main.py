@@ -11,6 +11,9 @@ import re
 from haystack.nodes import EmbeddingRetriever
 from haystack.nodes import OpenAIAnswerGenerator
 
+from ai import ai_chat_thread
+
+
 load_dotenv()  # take environment variables from .env.
 
 app = FastAPI()
@@ -60,13 +63,13 @@ retriever = EmbeddingRetriever(
 )
 
 
-generator = OpenAIAnswerGenerator(
-    api_key=os.getenv("OPENAI_TOKEN"),
-    model="gpt-3.5-turbo",
-    top_k=1,
-    max_tokens=1024
-)
-
+# generator = OpenAIAnswerGenerator(
+#     api_key=os.getenv("OPENAI_TOKEN"),
+#     model="gpt-3.5-turbo",
+#     top_k=1,
+#     max_tokens=1024
+# )
+ 
 class Entry(BaseModel):
     id: str
     slug: str
@@ -74,6 +77,10 @@ class Entry(BaseModel):
 
 class Entries(BaseModel):
     entries: List[Entry]
+
+class Message(BaseModel):
+    role: str
+    content: str
 
 @app.post("/entries")
 def create_entries(entries: Entries):
@@ -86,6 +93,13 @@ def create_entries(entries: Entries):
     document_store.update_embeddings(retriever)
 
     return []
+
+@app.post("/chat")
+def chat(messages: List[Message]):
+    msgs = [msg.dict() for msg in messages]
+    print(msgs) 
+    response = ai_chat_thread(msgs)
+    return response
 
 @app.get("/search")
 def search_entries(query: str):
