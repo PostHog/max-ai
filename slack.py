@@ -133,7 +133,6 @@ def handle_app_mention_events(body, logger, say):
             channel=event["channel"], ts=thread_ts
         )
         print(thread)
-        thread = [(msg["user"], msg["text"]) for msg in thread["messages"]]
         if "please summarize this" in event["text"].lower():
             say(text="On it!", thread_ts=thread_ts)
             summary = summarize_thread(thread)
