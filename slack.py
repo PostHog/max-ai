@@ -19,6 +19,41 @@ app = App(
     signing_secret=os.environ.get("SLACK_SIGNING_SECRET"),
 )
 
+FEEDBACK_BLOCKS = [
+    {
+        "type": "section",
+        "text": {
+            "type": "mrkdwn",
+            "text": "Was this helpful?"
+        }
+    },
+    {
+        "type": "actions",
+        "elements": [
+            {
+                "type": "button",
+                "text": {
+                    "type": "plain_text",
+                    "emoji": True,
+                    "text": "Yes"
+                },
+                "style": "primary",
+                "value": "yes"
+            },
+            {
+                "type": "button",
+                "text": {
+                    "type": "plain_text",
+                    "emoji": True,
+                    "text": "No"
+                },
+                "style": "danger",
+                "value": "no"
+            }
+        ]
+    }
+]
+
 
 # Add functionality here
 # @app.event("app_home_opened") etc
@@ -98,7 +133,7 @@ def handle_message_events(body, logger, say):
 
         if follow_up:
             response = get_query_response(event["text"])
-            say(text=response, thread_ts=event["ts"])
+            say(blocks=FEEDBACK_BLOCKS, text=response, thread_ts=event["ts"])
         return
     # thread response in a public channel
     elif "thread_ts" in event and event["channel_type"] == "channel":
@@ -151,8 +186,9 @@ def handle_app_mention_events(body, logger, say):
         if "please summarize this" in event["text"].lower():
             say(text="On it!", thread_ts=thread_ts)
             summary = summarize_thread(thread)
-            say(text=summary, thread_ts=thread_ts)
+            say(blocks=FEEDBACK_BLOCKS, text=summary, thread_ts=thread_ts)
             return
+
         thread = preprocess_slack_thread(bot_id, thread)
         response = ai_chat_thread(thread)
         say(text=response, thread_ts=thread_ts)
