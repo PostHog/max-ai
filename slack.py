@@ -122,7 +122,7 @@ def handle_message_events(body, logger, say):
 def handle_app_mention_events(body, logger, say):
     logger.info(body)
     print(body)
-    bot_id = body['authorizations']['user_id']
+    bot_id = body['authorizations'][0]['user_id']
     event = body["event"]
     if "thread_ts" in event:
         thread_ts = event["thread_ts"]
