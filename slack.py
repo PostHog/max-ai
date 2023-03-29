@@ -77,8 +77,9 @@ def update_home_tab(client, event, logger):
 
 
 def summarize_thread(thread):
+  prompt = f"Please summarize the content or information in the following slack thread: {thread}"
   completion = openai.ChatCompletion.create(model="gpt-3.5-turbo",
-                                            messages=[{"role": "user", "content": "Hello world!"}])
+                                            messages=[{"role": "user", "content": prompt}])
   return completion.choices[0].message.content
 
 
@@ -86,13 +87,12 @@ def summarize_thread(thread):
 def handle_message_events(body, logger, say):
   logger.info(body)
   event = body["event"]
-
   if "thread_ts" in event:
     thread_ts = event["thread_ts"]
     thread = app.client.conversations_replies(channel=event["channel"], ts=thread_ts)
-    summary = summarize_thread(thread)
-    print(summary)
-    say(text=summary, thread_ts=thread_ts)
+    if event['text'].lower() in "please summarize this":
+      summary = summarize_thread(thread)
+      say(text=summary, thread_ts=thread_ts)
 
 @app.event("app_mention")
 def handle_app_mention_events(body, logger, say):
