@@ -3,23 +3,64 @@ from dotenv import load_dotenv
 from typing import List
 from fastapi import FastAPI
 from pydantic import BaseModel
-import marko
-from marko.inline import RawText, StrongEmphasis as Strong, Emphasis, Link
-from chromadb.utils import embedding_functions
-import chromadb
+from haystack import Document
+from haystack.document_stores.weaviate import WeaviateDocumentStore
+from haystack.pipelines import GenerativeQAPipeline
+import re
+from haystack.nodes import EmbeddingRetriever
+from haystack.nodes import OpenAIAnswerGenerator
 
 load_dotenv()  # take environment variables from .env.
 
-client = chromadb.Client()
-
-openai_ef = embedding_functions.OpenAIEmbeddingFunction(
-    api_key=os.environ.get("OPENAI_API_KEY"),
-    model_name="text-embedding-ada-002"
-)
-
-collection = client.create_collection("posthog", embedding_function=openai_ef)
 
 app = FastAPI()
+
+document_store = WeaviateDocumentStore(
+    embedding_dim=1024,
+    custom_schema={
+      "classes": [
+        {
+          "class": "Document",
+          "description": "A class called document",
+          "vectorizer": "text2vec-openai",
+          "moduleConfig": {
+            "text2vec-openai": {
+              "model": "ada",
+              "modelVersion": "002",
+              "type": "text"
+            }
+          },
+          "properties": [
+            {
+              "dataType": [
+                "text"
+              ],
+              "description": "Content that will be vectorized",
+              "moduleConfig": {
+                "text2vec-openai": {
+                  "skip": False,
+                  "vectorizePropertyName": False
+                }
+              },
+              "name": "content"
+            }
+          ]
+        }
+      ]
+    },
+    additional_headers={"X-OpenAI-Api-Key": os.getenv("OPENAI_API_KEY")},
+)
+
+retriever = EmbeddingRetriever(
+    document_store=document_store,
+    batch_size=16,
+    embedding_model="ada",
+    api_key=os.getenv("OPENAI_API_KEY"),
+    max_seq_len=1024,
+)
+
+
+generator = OpenAIAnswerGenerator(api_key=os.getenv("OPENAI_API_KEY"), max_tokens=1024)
 
 class Entry(BaseModel):
     id: str
@@ -32,47 +73,39 @@ class Entries(BaseModel):
 @app.post("/entries")
 def create_entries(entries: Entries):
     for entry in entries.entries:
-        ps = extract_markdown_paragraphs(entry.rawBody)
-        for index, p in enumerate(ps):
-            if p:
-                collection.add(
-                    documents=[p],
-                    ids=[entry.id + f"-{index}"]
-                )
+        headings = split_markdown_sections(entry.rawBody)
+
+        documents = [Document(content=doc) for doc in headings]
+        document_store.write_documents(documents, index="Document")
+
+    document_store.update_embeddings(retriever)
 
     return []
 
 @app.get("/search")
 def search_entries(query: str):
-    results = collection.query(
-        query_texts=[query],
-        n_results=10,
-    )
+    pipeline = GenerativeQAPipeline(generator=generator, retriever=retriever)
 
-    return results
+    result = pipeline.run(query, params={"Retriever": {"top_k": 10}})
 
+    if result is None:
+        return []
 
-def extract_markdown_paragraphs(markdown_str):
-    def to_markdown(element):
-        if isinstance(element, list):
-            return ''.join(to_markdown(child) for child in element)
-        elif isinstance(element, RawText):
-            return element.children
-        elif isinstance(element, Strong):
-            return f"**{to_markdown(element.children)}**"
-        elif isinstance(element, Emphasis):
-            return f"*{to_markdown(element.children)}*"
-        elif isinstance(element, Link):
-            return f"[{to_markdown(element.children)}]({element.dest})"
-        else:
-            return ''
+    return result["answers"]
 
-    marko_doc = marko.parse(markdown_str)
-    paragraphs = []
+def split_markdown_sections(markdown_content):
+    header_pattern = re.compile(r"(^#+\s+.*$)", re.MULTILINE)
+    sections = []
 
-    for node in marko_doc.children:
-        if isinstance(node, marko.block.Paragraph):
-            markdown_paragraph = to_markdown(node.children)
-            paragraphs.append(markdown_paragraph)
+    matches = list(header_pattern.finditer(markdown_content))
+    if not matches:
+        return [markdown_content]
 
-    return paragraphs
+    for i, match in enumerate(matches[:-1]):
+        section_start = match.start()
+        section_end = matches[i + 1].start()
+        sections.append(markdown_content[section_start:section_end].strip())
+
+    sections.append(markdown_content[matches[-1].start():].strip())
+
+    return sections

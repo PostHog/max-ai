@@ -1,6 +1,7 @@
 import openai
 from dotenv import load_dotenv
 import os
+from enum import Enum
 
 
 load_dotenv()  # take environment variables from .env.
@@ -573,9 +574,13 @@ My feature flags are not working, how do I fix this?
 """
 
 
+class OpenAIModel(Enum):
+  GPT_4 = "gpt-4"
+  GPT_3_TURBO = "gpt-3.5-turbo"
+
 def get_response(prompt, suffix=""):
   api_response = openai.ChatCompletion.create(
-    model="gpt-4",
+    model=OpenAIModel.GPT_3_TURBO,
     messages=[
           {"role": "system", "content": "You are a helpful assistant that answers user queries."},
           {"role": "user", "content": prompt + suffix},
