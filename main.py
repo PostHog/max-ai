@@ -48,19 +48,19 @@ document_store = WeaviateDocumentStore(
         }
       ]
     },
-    additional_headers={"X-OpenAI-Api-Key": os.getenv("OPENAI_API_KEY")},
+    additional_headers={"X-OpenAI-Api-Key": os.getenv("OPENAI_TOKEN")},
 )
 
 retriever = EmbeddingRetriever(
     document_store=document_store,
     batch_size=16,
     embedding_model="ada",
-    api_key=os.getenv("OPENAI_API_KEY"),
+    api_key=os.getenv("OPENAI_TOKEN"),
     max_seq_len=1024,
 )
 
 
-generator = OpenAIAnswerGenerator(api_key=os.getenv("OPENAI_API_KEY"), max_tokens=1024)
+generator = OpenAIAnswerGenerator(api_key=os.getenv("OPENAI_TOKEN"), max_tokens=1024)
 
 class Entry(BaseModel):
     id: str
