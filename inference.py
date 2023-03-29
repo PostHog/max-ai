@@ -578,13 +578,19 @@ class OpenAIModel(Enum):
   GPT_4 = "gpt-4"
   GPT_3_TURBO = "gpt-3.5-turbo"
 
-def get_response(prompt, suffix=""):
+
+def get_response(prompt, suffix="", follow_up_messages=None, model=OpenAIModel.GPT_3_TURBO):
+  messages = [
+    {"role": "system", "content": "You are a helpful assistant that answers user queries."},
+    {"role": "user", "content": prompt + suffix},
+  ]
+
+  if follow_up_messages:
+    messages += follow_up_messages
+
   api_response = openai.ChatCompletion.create(
-    model=OpenAIModel.GPT_3_TURBO,
-    messages=[
-          {"role": "system", "content": "You are a helpful assistant that answers user queries."},
-          {"role": "user", "content": prompt + suffix},
-      ]
+    model=model,
+    messages=messages
   )
 
   return api_response["choices"][0]["message"]["content"]
