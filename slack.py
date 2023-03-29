@@ -107,17 +107,22 @@ def handle_message_events(body, logger, say):
     event = body["event"]
     print(event_type)
     if event_type == "im":
-        thread = app.client.conversations_replies(channel=event["channel"], ts=event["ts"])
+        thread = app.client.conversations_history(channel=event["channel"], limit=5)
+        thread = [{'user': msg['user'], 'message': msg['text']} for msg in thread['messages']]
         print(thread)
         response = ai_chat_thread(thread)
         say(response)
     if "thread_ts" in event:
       thread_ts = event["thread_ts"]
-      thread = app.client.conversations_replies(channel=event["channel"], ts=thread_ts)
-      thread = [(msg['user'], msg['text']) for msg in thread['messages']]
+      thread = app.client.conversations_replies(channel=event["channel"], limit=5, ts=thread_ts)
+      thread = [{'user': msg['user'], 'message': msg['text']} for msg in thread['messages']]
       if "please summarize this" in event['text'].lower():
         summary = summarize_thread(thread)
         say(text=summary, thread_ts=thread_ts)
+        return
+      response = ai_chat_thread(thread)
+      say(text=response, thread_ts=thread_ts)
+
 
 
 @app.event("app_mention")
@@ -133,8 +138,10 @@ def handle_app_mention_events(body, logger, say):
         print(thread)
         thread = [(msg["user"], msg["text"]) for msg in thread["messages"]]
         if "please summarize this" in event["text"].lower():
+            say(text="On it!", thread_ts=thread_ts)
             summary = summarize_thread(thread)
             say(text=summary, thread_ts=thread_ts)
+
 
 
 # Start your app
