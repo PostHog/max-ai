@@ -15,9 +15,13 @@ answer the questions.
 
 If the information is not enough, you can ask the user for more information. You can ask at most 2 questions.
 
+Also return the relevant URLS from which you gather this information.
+
 These are all the documents we know of:
 
 Feature Flags
+
+URL: https://posthog.com/docs/feature-flags/manual
 
 Feature Flags enable you to safely deploy and roll back new features. This means you can ship the code for new features and roll it out to your users in a managed way. If something goes wrong, you can roll back without having to re-deploy your application.
 
@@ -90,6 +94,8 @@ If you want to reuse the same key, you can delete your flag and use the same key
 
 Bootstrapping & local evaluation
 Last updated: Mar 15, 2023
+
+URL: https://posthog.com/docs/feature-flags/bootstrapping-and-local-evaluation
 
 
 Client-side bootstrapping
@@ -198,6 +204,8 @@ posthog.feature_flags.getFlags()
 Rollout strategies
 Last updated: Mar 13, 2023
 
+URL: https://posthog.com/docs/feature-flags/rollout-strategies
+
 There are three options for deciding who sees your new feature. You can roll out the feature to:
 
 A fixed percentage of users or groups
@@ -237,6 +245,8 @@ As a result, bear in mind that changing those values will result in flags being 
 Common questions about feature flags
 Last updated: Mar 28, 2023
 
+URL: https://posthog.com/docs/feature-flags/common-questions
+
 
 Why is my feature flag not working?
 Here's a list of suggestions to troubleshoot your flag:
@@ -269,6 +279,9 @@ Experiments that depend on trend goals won't work since we use this event to cal
 ---
 
 How to run Experiments without feature flags
+
+URL: https://posthog.com/tutorials/experiments
+
 This tutorial explains how to run an experiment in PostHog while not using our feature flag library, either because you've rolled out your own or, more commonly, because feature flag support doesn't exist yet in your favourite PostHog client library.
 
 
@@ -361,6 +374,8 @@ extended_prompt = """
 
 Feature Flags Posthog-js SDK
 
+URL: https://posthog.com/docs/libraries/js#feature-flags
+
 Here's how you can use them:
 
 Do something when the feature flags load:
@@ -435,6 +450,9 @@ Note: Passing in a distinctID to bootstrap replaces any existing IDs, which mean
 ---
 
 Feature flags Posthog-node SDK
+
+URL: https://posthog.com/docs/libraries/node#feature-flags
+
 
 PostHog's feature flags enable you to safely deploy and roll back new features.
 
@@ -562,6 +580,7 @@ await client.reloadFeatureFlags()
 """
 
 suffix = """
+
 The question you have to answer is:
 
 """
@@ -609,4 +628,4 @@ def get_query_response(question, follow_up_messages=None, model=OpenAIModel.GPT_
   return api_response["choices"][0]["message"]["content"]
 
 
-# print(get_query_response("I want to bootstrap flags, how do I do that?"))
+print(get_query_response("I want to bootstrap flags, how do I do that?"))
