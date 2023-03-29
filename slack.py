@@ -88,7 +88,7 @@ def summarize_thread(thread):
 def ai_chat_thread(bot_id, thread):
     prompt = f"{thread}"
     print(thread)
-    history = [{"role": "assistant" if user == bot_id else "user", "content": msg} for user, msg in thread]
+    history = [{"role": "assistant" if user == bot_id else "user", "content": msg} for user, msg in thread.items()]
     completion = openai.ChatCompletion.create(
         model="gpt-3.5-turbo", messages=[
                 {"role": "system", "content": "You are the trusty PostHog support bot on Slack named Max. Please continue the conversation in a way that is helpful to the user and also makes the user feel like they are talking to a human."},
