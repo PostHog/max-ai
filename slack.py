@@ -90,29 +90,36 @@ def summarize_thread(thread):
   return completion.choices[0].message.content
 
 
-@app.command("summarize")
+@app.command("/summarize")
 def handle_summarize_slash_command(ack, say, command):
   ack()
-  event = body["event"]
-  if "thread_ts" in event:
-    thread_ts = event["thread_ts"]
-    thread = app.client.conversations_replies(channel=event["channel"], ts=thread_ts)
-    thread = [(msg['user'], msg['text']) for msg in thread['messages']] 
-    if event['text'].lower() in "please summarize this":
-      summary = summarize_thread(thread)
-      say(text=summary, thread_ts=thread_ts)
+  say(text="Hi there")
 
 
 @app.event("message")
 def handle_message_events(body, logger, say):
-  logger.info(body)
+  print("~~~~~~~~~hi~~~~")   
+  event_type = body['event']['channel_type'] 
+  print(event_type) 
+  if event_type == 'im':
+    say("Hi there! I love direct messages")
+  # event = body["event"]
+  # if "thread_ts" in event:
+  #   thread_ts = event["thread_ts"]
+  #   thread = app.client.conversations_replies(channel=event["channel"], ts=thread_ts)
+  #   print(thread) 
+  #   thread = [(msg['user'], msg['text']) for msg in thread['messages']] 
+  #   if "please summarize this" in event['text'].lower():
+  #     summary = summarize_thread(thread)
+  #     say(text=summary, thread_ts=thread_ts)
+
 
 
 @app.event("app_mention")
 def handle_app_mention_events(body, logger, say):
   logger.info(body)
+  print(body) 
   event = body["event"]
-  print(event) 
   if "thread_ts" in event:
     thread_ts = event["thread_ts"]
     thread = app.client.conversations_replies(channel=event["channel"], ts=thread_ts)
