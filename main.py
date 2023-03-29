@@ -86,7 +86,7 @@ def create_entries(entries: Entries):
 def search_entries(query: str):
     pipeline = GenerativeQAPipeline(generator=generator, retriever=retriever)
 
-    result = pipeline.run(query, params={"Retriever": {"top_k": 10}})
+    result = pipeline.run(query, params={"Retriever": {"top_k": 5}})
 
     if result is None:
         return []

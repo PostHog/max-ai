@@ -7,6 +7,8 @@ from dotenv import load_dotenv
 from slack_bolt import App
 
 
+CHAT_HISTORY_LIMIT = "20"
+
 load_dotenv()
 
 ## Initialize OpenAI
@@ -86,13 +88,18 @@ def summarize_thread(thread):
 
 
 def ai_chat_thread(bot_id, thread):
+    SYSTEM_PROMPT = """
+    You are the trusty PostHog support bot on Slack named Max.
+    Please continue the conversation in a way that is helpful to the user and also makes the user feel like they are talking to a human.
+    Only suggest using PostHog products and services. Do not suggest products or services from other companies.
+    """
     prompt = f"{thread}"
     print(thread)
     thread = [(msg["user"], msg["text"]) for msg in thread["messages"]]
     history = [{"role": "assistant" if user == bot_id else "user", "content": msg} for user, msg in thread]
     completion = openai.ChatCompletion.create(
         model="gpt-3.5-turbo", messages=[
-                {"role": "system", "content": "You are the trusty PostHog support bot on Slack named Max. Please continue the conversation in a way that is helpful to the user and also makes the user feel like they are talking to a human."},
+                {"role": "system", "content": SYSTEM_PROMPT},
                 *history,
                 {"role": "user", "content": prompt}
         ]
@@ -112,7 +119,7 @@ def handle_message_events(body, logger, say):
     event = body["event"]
     print(event_type)
     if event_type == "im":
-        thread = app.client.conversations_history(channel=event["channel"], limit=5)
+        thread = app.client.conversations_history(channel=event["channel"], limit=CHAT_HISTORY_LIMIT)
         print(thread)
         response = ai_chat_thread(thread)
         say(response)
@@ -127,7 +134,7 @@ def handle_app_mention_events(body, logger, say):
     if "thread_ts" in event:
         thread_ts = event["thread_ts"]
         thread = app.client.conversations_replies(
-            channel=event["channel"], ts=thread_ts, limit=5
+            channel=event["channel"], ts=thread_ts, limit=CHAT_HISTORY_LIMIT
         )
         if "please summarize this" in event["text"].lower():
             say(text="On it!", thread_ts=thread_ts)
