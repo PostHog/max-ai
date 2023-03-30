@@ -1,13 +1,15 @@
 import os
 
-import openai
 from dotenv import load_dotenv
 from slack_bolt import App
 from classification import classify_question
 from inference import get_query_response
 
 from ai import ai_chat_thread, summarize_thread
+import posthog
 
+posthog.api_key = os.environ.get("POSTHOG_API_KEY")
+posthog.host = os.environ.get("POSTHOG_HOST")
 
 CHAT_HISTORY_LIMIT = "20"
 
@@ -75,7 +77,7 @@ def preprocess_slack_thread(bot_id, thread):
 @app.command("/summarize")
 def handle_summarize_slash_command(ack, say, command):
     ack()
-    say(text="Hi there")
+    send_message(text="Hi there")
 
 
 @app.event("message")
@@ -88,14 +90,14 @@ def handle_message_events(body, logger, say):
         thread = app.client.conversations_history(channel=event["channel"], limit=CHAT_HISTORY_LIMIT)
         thread = preprocess_slack_thread(bot_id, thread)
         response = ai_chat_thread(thread)
-        say(response)
+        send_message(say, response)
 
     # new message in a public channel
     elif "thread_ts" not in event and event["type"] == "message" and event["channel_type"] == "channel":
         # follow_up = classify_question(event["text"])
 
         # if follow_up:
-        #     say(text=response, thread_ts=event["ts"])
+        #     send_message(say, text=response, thread_ts=event["ts"])
         return
     # thread response in a public channel
     elif "thread_ts" in event and event["channel_type"] == "channel":
@@ -128,7 +130,7 @@ def handle_message_events(body, logger, say):
         question = thread[0]["content"]
         response = get_query_response(question, thread)
 
-        say(text=response, thread_ts=event["thread_ts"])
+        send_message(say, text=response, thread_ts=event["thread_ts"])
 
 @app.event("emoji_changed")
 def handle_emoji_changed_events(body, logger, say):
@@ -146,15 +148,21 @@ def handle_app_mention_events(body, logger, say):
         channel=event["channel"], ts=thread_ts, limit=CHAT_HISTORY_LIMIT
     )
     if "please summarize this" in event["text"].lower():
-        say(text="On it!", thread_ts=thread_ts)
+        send_message(say, text="On it!", thread_ts=thread_ts)
         summary = summarize_thread(thread)
-        say(text=summary, thread_ts=thread_ts)
+        send_message(say, text=summary, thread_ts=thread_ts)
         return
     
 
     thread = preprocess_slack_thread(bot_id, thread)
     response = ai_chat_thread(thread)
-    say(text=response, thread_ts=thread_ts)
+    send_message(say, text=response, thread_ts=thread_ts)
+
+def send_message(say, text, thread_ts):
+    if thread_ts:
+        say(text=text, thread_ts=thread_ts)
+    else:
+        say(text)
 
 
 # Start your app
