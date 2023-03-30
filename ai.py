@@ -14,10 +14,25 @@ print(f"Available models: {', '.join(models)}")
 
 
 def ai_chat_thread(thread):
-    SYSTEM_PROMPT = """
+    pipeline = Pipeline()
+
+    shaper = Shaper(func="join_documents", inputs={"documents": "documents"}, outputs=["documents"])
+
+    pipeline.add_node(retriever, name="Retriever", inputs=["Query"])
+    pipeline.add_node(shaper, name="Shaper", inputs=["Retriever"])
+    # pipeline.add_node(component=prompt_node, name="PromptNode", inputs=["Shaper"])
+    result = pipeline.run(query=query, params={"Retriever": {"top_k": 10}}, debug=True)
+
+    documents = result["documents"][0]["content"]
+
+    SYSTEM_PROMPT = f"""
     You are the trusty PostHog support bot on Slack named Max.
     Please continue the conversation in a way that is helpful to the user and also makes the user feel like they are talking to a human.
     Only suggest using PostHog products and services. Do not suggest products or services from other companies.
+    Please answer the question according to the following context from the PostHog documentation.
+    ===
+    Context:
+    {documents}
     """
     completion = openai.ChatCompletion.create(
         model="gpt-3.5-turbo", messages=[
