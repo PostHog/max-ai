@@ -2,6 +2,7 @@ import os
 from dotenv import load_dotenv
 from typing import List
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from haystack import Document
 from haystack.document_stores.weaviate import WeaviateDocumentStore
@@ -17,6 +18,14 @@ from ai import ai_chat_thread
 load_dotenv()  # take environment variables from .env.
 
 app = FastAPI()
+origins = ['*']
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 document_store = WeaviateDocumentStore(
     embedding_dim=1024,
@@ -98,10 +107,18 @@ def search_entries(query: str):
     pipeline = Pipeline()
 
     prompt_template = PromptTemplate(
-        name="question-answering-with-examples",
-        prompt_text="Please answer the question according to the following context."
-        "\n===\nContext: {documents}\n===\n{query}",
-            )
+       name="question-answering-with-examples",
+       prompt_text="""
+           You are the trusty PostHog support bot on Slack named Max.
+           Please continue the conversation in a way that is helpful to the user and also makes the user feel like they are talking to a human.
+           Only suggest using PostHog products and services. Do not suggest products or services from other companies.
+           Please answer the question according to the following context from the PostHog documentation.
+           ===
+           Context:
+           {documents}
+           ===
+           {query}""",
+    )
 
     prompt_model = PromptModel("gpt-3.5-turbo", api_key=os.getenv("OPENAI_TOKEN"))
     prompt_node = PromptNode(prompt_model, output_variable="answer", default_prompt_template=prompt_template)
@@ -111,7 +128,7 @@ def search_entries(query: str):
     pipeline.add_node(retriever, name="Retriever", inputs=["Query"])
     pipeline.add_node(shaper, name="Shaper", inputs=["Retriever"])
     pipeline.add_node(component=prompt_node, name="PromptNode", inputs=["Shaper"])
-    result = pipeline.run(query=query, params={"Retriever": {"top_k": 5}}, debug=True)
+    result = pipeline.run(query=query, params={"Retriever": {"top_k": 10}}, debug=True)
 
     if result is None:
         return []
