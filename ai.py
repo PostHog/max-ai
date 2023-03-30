@@ -74,7 +74,7 @@ def ai_chat_thread(thread):
 
     result = pipeline.run(query=thread[0]["content"], params={"Retriever": {"top_k": 10}}, debug=True)
 
-    documents = result["documents"][0].content
+    documents = result["documents"][0].content.replace('\n', '')
 
     SYSTEM_PROMPT = f"""
     You are the trusty PostHog support bot on Slack named Max.
