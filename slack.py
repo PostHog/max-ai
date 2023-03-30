@@ -19,17 +19,6 @@ app = App(
     signing_secret=os.environ.get("SLACK_SIGNING_SECRET"),
 )
 
-FEEDBACK_BLOCKS = [
-    {
-        "type": "section",
-        "text": {
-            "type": "mrkdwn",
-            "text": "Was this helpful? :thumbsup: or :thumbsdown:"
-        }
-    }
-]
-
-
 # Add functionality here
 # @app.event("app_home_opened") etc
 @app.event("app_home_opened")
@@ -106,18 +95,7 @@ def handle_message_events(body, logger, say):
         # follow_up = classify_question(event["text"])
 
         # if follow_up:
-        #     response = get_query_response(event["text"])
-        #     blocks = [
-        #         {
-        #             "type": "section",
-        #             "text": {
-        #                 "type": "mrkdwn",
-        #                 "text": response
-        #             }
-        #         },
-        #         *FEEDBACK_BLOCKS
-        #     ]
-        #     say(blocks=blocks, thread_ts=event["ts"])
+        #     say(text=response, thread_ts=event["ts"])
         return
     # thread response in a public channel
     elif "thread_ts" in event and event["channel_type"] == "channel":
@@ -152,7 +130,9 @@ def handle_message_events(body, logger, say):
 
         say(text=response, thread_ts=event["thread_ts"])
 
-
+@app.event("emoji_changed")
+def handle_emoji_changed_events(body, logger, say):
+    print(body)
 
 
 @app.event("app_mention")
@@ -168,34 +148,13 @@ def handle_app_mention_events(body, logger, say):
     if "please summarize this" in event["text"].lower():
         say(text="On it!", thread_ts=thread_ts)
         summary = summarize_thread(thread)
-        blocks = [
-            {
-                "type": "section",
-                "text": {
-                    "type": "mrkdwn",
-                    "text": summary
-                }
-            },
-            *FEEDBACK_BLOCKS
-        ]
-        say(blocks=blocks, thread_ts=thread_ts)
+        say(text=summary, thread_ts=thread_ts)
         return
     
 
     thread = preprocess_slack_thread(bot_id, thread)
     response = ai_chat_thread(thread)
-
-    blocks = [
-        {
-            "type": "section",
-            "text": {
-                "type": "mrkdwn",
-                "text": response
-            }
-        },
-        *FEEDBACK_BLOCKS
-    ]
-    say(blocks=blocks, thread_ts=thread_ts)
+    say(text=response, thread_ts=thread_ts)
 
 
 # Start your app
