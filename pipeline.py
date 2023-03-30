@@ -41,7 +41,33 @@ class MaxPipeline:
                       "name": "content"
                     }
                   ]
-                }
+                },
+                {
+                  "class": "ContextDocument",
+                  "vectorizer": "text2vec-openai",
+                  "moduleConfig": {
+                    "text2vec-openai": {
+                      "model": "ada",
+                      "modelVersion": "002",
+                      "type": "text"
+                    }
+                  },
+                  "properties": [
+                    {
+                      "dataType": [
+                        "text"
+                      ],
+                      "moduleConfig": {
+                        "text2vec-openai": {
+                          "skip": False,
+                          "vectorizePropertyName": False
+                        }
+                      },
+                      "name": "content"
+                    }
+                  ]
+                },
+
               ]
             },
             additional_headers={"X-OpenAI-Api-Key": self.openai_token},
@@ -52,19 +78,20 @@ class MaxPipeline:
             batch_size=16,
             embedding_model="ada",
             api_key=self.openai_token,
-            max_seq_len=2048,
+            max_seq_len=768,
         )
 
     def embed_documents(self, documents: List[Document]):
         doc_ids = [doc.id for doc in documents]
 
-        existing_docs = self.document_store.get_documents_by_id(doc_ids)
+        existing_docs = self.document_store.get_documents_by_id(doc_ids, index="ContextDocument")
+
         # only add documents that are not already in the document store
         # TODO: Check the contentHash if ID's match so we update records if the content has changed
         new_docs = [doc for doc in documents if doc.id not in existing_docs]
 
-        self.document_store.write_documents(new_docs)
-        self.document_store.update_embeddings(self.retriever, filters={
+        self.document_store.write_documents(new_docs, index="ContextDocument")
+        self.document_store.update_embeddings(self.retriever, index="ContextDocument", filters={
             # only update embeddings for docs we just inserted
             "id": {"$in": [doc.id for doc in new_docs]}
         })
@@ -82,7 +109,7 @@ class MaxPipeline:
         pipeline.add_node(self.retriever, name="Retriever", inputs=["Query"])
         pipeline.add_node(shaper, name="Shaper", inputs=["Retriever"])
 
-        result = pipeline.run(query=query, params={"Retriever": {"top_k": 10}}, debug=True)
+        result = pipeline.run(query=query, params={"Retriever": {"top_k": 10, "index": "Document"}}, debug=True)
 
         return result
 

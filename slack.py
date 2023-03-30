@@ -175,7 +175,7 @@ def _handle_app_mention_events(body, logger, say):
     response = ai_chat_thread(thread)
     send_message(say, text=response, thread_ts=thread_ts, user_id=user_id, thread=thread)
 
-def send_message(say, text, thread_ts, user_id, thread):
+def send_message(say, text, thread_ts=None, user_id=None, thread=None):
     posthog.capture("max", "message generated", {"message": text, "thread_ts": thread_ts, "sender": user_id, "context": thread})
     if thread_ts:
         say(text=text, thread_ts=thread_ts)

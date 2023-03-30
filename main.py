@@ -1,10 +1,11 @@
 import os
 from dotenv import load_dotenv
-from typing import List, Optional
+from typing import List
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from haystack import Document
+from weaviate.util import generate_uuid5
 import re
 
 from ai import ai_chat_thread
@@ -31,10 +32,8 @@ app.add_middleware(
 )
 
 class Entry(BaseModel):
-    id: str
-    slug: Optional[str]
-    contentHash: str
-    body: str
+    content: str
+    meta: dict
 
 class Entries(BaseModel):
     entries: List[Entry]
@@ -49,10 +48,12 @@ pipeline = MaxPipeline(
 
 @app.post("/entries")
 def create_entries(entries: Entries):
-    for entry in entries.entries:
-        headings = split_markdown_sections(entry.body)
+    pipeline.document_store.delete_all_documents()
 
-        documents = [Document(content=doc) for doc in headings]
+    for entry in entries.entries:
+        headings = split_markdown_sections(entry.content)
+
+        documents = [Document(id=generate_uuid5(doc), content=doc, content_type='text', meta=entry.meta) for doc in headings]
         pipeline.embed_documents(documents)
 
     return []
