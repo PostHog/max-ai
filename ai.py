@@ -3,6 +3,14 @@ import os
 from dotenv import load_dotenv
 import openai
 
+from haystack import Document
+from haystack.document_stores.weaviate import WeaviateDocumentStore
+from haystack.pipelines import Pipeline, GenerativeQAPipeline
+from haystack.nodes import PromptTemplate, PromptModel, PromptNode, Shaper
+from haystack.nodes import EmbeddingRetriever
+from haystack.nodes import OpenAIAnswerGenerator
+
+OPENAI_MODEL = "gpt-3.5-turbo"
 load_dotenv()
 
 ## Initialize OpenAI
@@ -12,6 +20,49 @@ print(f"Available models: {', '.join(models)}")
 
 ## "gpt-4" and "gpt-3.5-turbo" are the two we'll use here
 
+document_store = WeaviateDocumentStore(
+    embedding_dim=1024,
+    custom_schema={
+      "classes": [
+        {
+          "class": "Document",
+          "description": "A class called document",
+          "vectorizer": "text2vec-openai",
+          "moduleConfig": {
+            "text2vec-openai": {
+              "model": "ada",
+              "modelVersion": "002",
+              "type": "text"
+            }
+          },
+          "properties": [
+            {
+              "dataType": [
+                "text"
+              ],
+              "description": "Content that will be vectorized",
+              "moduleConfig": {
+                "text2vec-openai": {
+                  "skip": False,
+                  "vectorizePropertyName": False
+                }
+              },
+              "name": "content"
+            }
+          ]
+        }
+      ]
+    },
+    additional_headers={"X-OpenAI-Api-Key": os.getenv("OPENAI_TOKEN")},
+)
+
+retriever = EmbeddingRetriever(
+    document_store=document_store,
+    batch_size=16,
+    embedding_model="ada",
+    api_key=os.getenv("OPENAI_TOKEN"),
+    max_seq_len=2048,
+)
 
 def ai_chat_thread(thread):
     pipeline = Pipeline()
@@ -20,10 +71,10 @@ def ai_chat_thread(thread):
 
     pipeline.add_node(retriever, name="Retriever", inputs=["Query"])
     pipeline.add_node(shaper, name="Shaper", inputs=["Retriever"])
-    # pipeline.add_node(component=prompt_node, name="PromptNode", inputs=["Shaper"])
-    result = pipeline.run(query=query, params={"Retriever": {"top_k": 10}}, debug=True)
 
-    documents = result["documents"][0]["content"]
+    result = pipeline.run(query=thread[0]["content"], params={"Retriever": {"top_k": 10}}, debug=True)
+
+    documents = result["documents"][0].content
 
     SYSTEM_PROMPT = f"""
     You are the trusty PostHog support bot on Slack named Max.
@@ -35,7 +86,7 @@ def ai_chat_thread(thread):
     {documents}
     """
     completion = openai.ChatCompletion.create(
-        model="gpt-3.5-turbo", messages=[
+        model=OPENAI_MODEL, messages=[
                 {"role": "system", "content": SYSTEM_PROMPT},
                 *thread,
         ]
@@ -53,6 +104,6 @@ def summarize_thread(thread):
     Solution: <solution>
     Here is the conversation: {thread}"""
     completion = openai.ChatCompletion.create(
-        model="gpt-3.5-turbo", messages=[{"role": "user", "content": prompt}]
+        model=OPENAI_MODEL, messages=[{"role": "user", "content": prompt}]
     )
     return completion.choices[0].message.content

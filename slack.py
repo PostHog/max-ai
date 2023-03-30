@@ -188,32 +188,29 @@ def handle_app_mention_events(body, logger, say):
     print(body)
     bot_id = body['authorizations'][0]['user_id']
     event = body["event"]
-    if "thread_ts" in event:
-        thread_ts = event["thread_ts"]
-        thread = app.client.conversations_replies(
-            channel=event["channel"], ts=thread_ts, limit=CHAT_HISTORY_LIMIT
-        )
-        if "please summarize this" in event["text"].lower():
-            say(text="On it!", thread_ts=thread_ts)
-            summary = summarize_thread(thread)
-            blocks = [
-                {
-                    "type": "section",
-                    "text": {
-                        "type": "mrkdwn",
-                        "text": summary
-                    }
-                },
-                *FEEDBACK_BLOCKS
-            ]
-            say(blocks=blocks, thread_ts=thread_ts)
-            return
+    thread_ts = event["thread_ts"] if "thread_ts" in event else event["ts"]
+    thread = app.client.conversations_replies(
+        channel=event["channel"], ts=thread_ts, limit=CHAT_HISTORY_LIMIT
+    )
+    if "please summarize this" in event["text"].lower():
+        say(text="On it!", thread_ts=thread_ts)
+        summary = summarize_thread(thread)
+        blocks = [
+            {
+                "type": "section",
+                "text": {
+                    "type": "mrkdwn",
+                    "text": summary
+                }
+            },
+            *FEEDBACK_BLOCKS
+        ]
+        say(blocks=blocks, thread_ts=thread_ts)
+        return
 
-        thread = preprocess_slack_thread(bot_id, thread)
-        response = ai_chat_thread(thread)
-        say(text=response, thread_ts=thread_ts)
-    else:
-        say(text="Hi there! :posthog-happy: I'm Max, Your friendly PostHog support AI. How can I help?", thread_ts=event["ts"])
+    thread = preprocess_slack_thread(bot_id, thread)
+    response = ai_chat_thread(thread)
+    say(text=response, thread_ts=thread_ts)
 
 
 # Start your app
