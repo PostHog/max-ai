@@ -38,7 +38,8 @@ def ai_chat_thread(thread):
     The current Platform team secondary on-call is <@Tomás Farías Santana>.
     The current Infra team secondary on-call is <@ellie>.
     The current Analytics team secondary on-call is <@Thomas Obermueller>.
-    ===
+    """ 
+    CONTEXT_PROMPT = f""" 
     Context:
     {documents}
     """
@@ -48,6 +49,7 @@ def ai_chat_thread(thread):
     completion = openai.ChatCompletion.create(
         model=OPENAI_MODEL, messages=[
                 {"role": "system", "content": SYSTEM_PROMPT},
+                {"role": "user", "content": CONTEXT_PROMPT}
                 *thread,
         ]
     )
