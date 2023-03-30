@@ -31,6 +31,14 @@ What is the weather like?
 
 Hi friends I'm feeling great today, do you want to try my new app?
 
+How do I capture fewer session recordings?
+
+How do I create an insight?
+
+How do I update a helm chart?
+
+What are the types graphs support?
+
 ---
 
 Now classify the question below. Remember to return only one word.
