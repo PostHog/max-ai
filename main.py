@@ -57,6 +57,11 @@ def create_entries(entries: Entries):
 
     return []
 
+@app.post("/spawn")
+def receive_spawn():
+    print("Spawned")
+    return []
+
 @app.post("/chat")
 def chat(messages: List[Message]):
     msgs = [msg.dict() for msg in messages]
