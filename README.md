@@ -7,7 +7,12 @@ MaxAI was born in Aruba at a PostHog team offsite for a hackathon on a warm spri
 
 ## How it works
 
-How Max works is surprisingly simple:
+How Max works is surprisingly simple.
+
+### Tooling
+- [Weaviate](https://weaviate.io/) - Vector database that allows us to pull relevant context to embed in our prompts to GPT
+- [Haystack](https://haystack.deepset.ai/) by deepset - Allows us to hook together pipelines of these tools to service user prompts
+- [OpenAI](https://platform.openai.com/docs/guides/chat/introduction) - Provides us the base language model in `gpt-3.5-turbo` that we augment to create our AI
 
 ### Embedding time
 
