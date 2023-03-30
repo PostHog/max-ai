@@ -1,5 +1,4 @@
 import os
-import time
 
 from dotenv import load_dotenv
 from slack_bolt import App
@@ -142,6 +141,8 @@ def handle_emoji_changed_events(body, logger, say):
 def handle_app_mention_events(body, logger, say):
     logger.info(body)
     print(body)
+
+    user_id = get_user_id(body)
     bot_id = body['authorizations'][0]['user_id']
     event = body["event"]
     thread_ts = event["thread_ts"] if "thread_ts" in event else event["ts"]
@@ -149,9 +150,9 @@ def handle_app_mention_events(body, logger, say):
         channel=event["channel"], ts=thread_ts, limit=CHAT_HISTORY_LIMIT
     )
     if "please summarize this" in event["text"].lower():
-        send_message(say, text="On it!", thread_ts=thread_ts)
+        send_message(say, text="On it!", thread_ts=thread_ts, user_id=user_id)
         summary = summarize_thread(thread)
-        send_message(say, text=summary, thread_ts=thread_ts)
+        send_message(say, text=summary, thread_ts=thread_ts, user_id=user_id)
         return
     
     thread = preprocess_slack_thread(bot_id, thread)
@@ -161,20 +162,22 @@ def handle_app_mention_events(body, logger, say):
     if use_feature_flag_prompt:
         print("using feature flag prompt for ", first_relevant_message)
         response = get_query_response(first_relevant_message, thread[1:])
-        send_message(say, text=response, thread_ts=thread_ts)
+        send_message(say, text=response, thread_ts=thread_ts, user_id=user_id)
         return
     
 
     response = ai_chat_thread(thread)
-    send_message(say, text=response, thread_ts=thread_ts)
+    send_message(say, text=response, thread_ts=thread_ts, user_id=user_id)
 
-def send_message(say, text, thread_ts):
-    posthog.capture("max", "message generated", {"message": text, "thread_ts": thread_ts})
+def send_message(say, text, thread_ts, user_id):
+    posthog.capture("max", "message generated", {"message": text, "thread_ts": thread_ts, "sender": user_id})
     if thread_ts:
         say(text=text, thread_ts=thread_ts)
     else:
         say(text)
 
+def get_user_id(body):
+    return body.get("event", {}).get("user", None)
 
 # Start your app
 if __name__ == "__main__":
