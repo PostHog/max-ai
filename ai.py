@@ -78,6 +78,11 @@ def ai_chat_thread(thread):
     Only suggest using PostHog products and services. Do not suggest products or services from other companies.
     All relative links should point to domain posthog.com.
     Please answer the question according to the following context from the PostHog documentation.
+    If you are unsure of the answer, please say "I'm not sure" and encourage the user to ask the current Support Hero or team secondary on-call.
+    The current Support Hero is <@Tomás Farías Santana>.
+    The current Platform team secondary on-call is <@Tomás Farías Santana>.
+    The current Infra team secondary on-call is <@ellie>.
+    The current Analytics team secondary on-call is <@Thomas Obermueller>.
     ===
     Context:
     {documents}
