@@ -55,12 +55,15 @@ def ai_chat_thread(thread):
     first_message  = thread[0]
     follow_up_thread = thread[1:]
 
-    completion = openai.ChatCompletion.create(
-        model=OPENAI_MODEL, messages=[
+    prompt = [
                 {"role": "system", "content": SYSTEM_PROMPT},
                 {"role": "user", "content": CONTEXT_PROMPT + first_message["content"]},
                 *follow_up_thread,
         ]
+    print(prompt)
+
+    completion = openai.ChatCompletion.create(
+        model=OPENAI_MODEL, messages=prompt
     )
 
     return completion.choices[0].message.content

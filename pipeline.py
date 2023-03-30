@@ -15,33 +15,33 @@ class MaxPipeline:
             embedding_dim=1024,
             custom_schema={
               "classes": [
-                {
-                  "class": "Document",
-                  "description": "A class called document",
-                  "vectorizer": "text2vec-openai",
-                  "moduleConfig": {
-                    "text2vec-openai": {
-                      "model": "ada",
-                      "modelVersion": "002",
-                      "type": "text"
-                    }
-                  },
-                  "properties": [
-                    {
-                      "dataType": [
-                        "text"
-                      ],
-                      "description": "Content that will be vectorized",
-                      "moduleConfig": {
-                        "text2vec-openai": {
-                          "skip": False,
-                          "vectorizePropertyName": False
-                        }
-                      },
-                      "name": "content"
-                    }
-                  ]
-                },
+                # {
+                #   "class": "Document",
+                #   "description": "A class called document",
+                #   "vectorizer": "text2vec-openai",
+                #   "moduleConfig": {
+                #     "text2vec-openai": {
+                #       "model": "ada",
+                #       "modelVersion": "002",
+                #       "type": "text"
+                #     }
+                #   },
+                #   "properties": [
+                #     {
+                #       "dataType": [
+                #         "text"
+                #       ],
+                #       "description": "Content that will be vectorized",
+                #       "moduleConfig": {
+                #         "text2vec-openai": {
+                #           "skip": False,
+                #           "vectorizePropertyName": False
+                #         }
+                #       },
+                #       "name": "content"
+                #     }
+                #   ]
+                # },
                 {
                   "class": "ContextDocument",
                   "vectorizer": "text2vec-openai",
@@ -105,7 +105,7 @@ class MaxPipeline:
         pipeline.add_node(self.retriever, name="Retriever", inputs=["Query"])
         pipeline.add_node(shaper, name="Shaper", inputs=["Retriever"])
 
-        result = pipeline.run(query=query, params={"Retriever": {"top_k": 10, "index": "Document"}}, debug=True)
+        result = pipeline.run(query=query, params={"Retriever": {"top_k": 10, "index": "ContextDocument"}}, debug=True)
 
         return result
 
