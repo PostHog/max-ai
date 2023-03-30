@@ -7,11 +7,14 @@ from classification import classify_question
 from inference import get_query_response
 
 from ai import ai_chat_thread, summarize_thread
-import posthog
+import posthoganalytics as posthog
 
 CHAT_HISTORY_LIMIT = "20"
 
 load_dotenv()
+
+posthog.project_api_key = os.environ.get("POSTHOG_API_KEY")
+posthog.host = os.environ.get("POSTHOG_HOST")
 
 # Initializes your app with your bot token and signing secret
 app = App(
