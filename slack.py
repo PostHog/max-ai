@@ -8,7 +8,7 @@ from inference import get_query_response
 from ai import ai_chat_thread, summarize_thread
 import posthog
 
-posthog.api_key = os.environ.get("POSTHOG_API_KEY")
+posthog.project_api_key = os.environ.get("POSTHOG_API_KEY")
 posthog.host = os.environ.get("POSTHOG_HOST")
 
 CHAT_HISTORY_LIMIT = "20"
