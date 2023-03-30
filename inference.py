@@ -581,7 +581,7 @@ await client.reloadFeatureFlags()
 
 suffix = """
 
-The question you have to answer is:
+The question you have to answer is below. Remember to return URLs to any relevant code or documentation, but do not make up URLs on your own.
 
 """
 
