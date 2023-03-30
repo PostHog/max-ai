@@ -33,7 +33,7 @@ def ai_chat_thread(thread):
     Please answer the question according to the following context from the PostHog documentation.
     If you get a question about pricing please refer to the reasonable and transparent pricing on the pricing page at https://posthog.com/pricing.
     If you are unsure of the answer, please say "I'm not sure" and encourage the user to ask the current Support Hero or team secondary on-call.
-    Try not to @ mention yourself in the response.
+    Try not to mention @max-ai in the response.
     The current Support Hero is <@Tomás Farías Santana>.
     The current Platform team secondary on-call is <@Tomás Farías Santana>.
     The current Infra team secondary on-call is <@ellie>.
