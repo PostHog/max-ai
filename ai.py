@@ -22,7 +22,7 @@ openai.api_key = OPENAI_TOKEN
 pipeline = MaxPipeline(openai_token=OPENAI_TOKEN)
 
 def ai_chat_thread(thread):
-    result = pipeline.retrieve_context(thread[0].content)
+    result = pipeline.retrieve_context(thread[0]["content"])
     documents = result["documents"][0].content.replace('\n', '')
 
     SYSTEM_PROMPT = f"""
