@@ -26,6 +26,10 @@ def ai_chat_thread(thread):
     documents = result["documents"][0].content.replace('\n', '')
 
     SYSTEM_PROMPT = f"""
+    You are a helpful assistant that answers as concisely as possible.
+    """
+
+    CONTEXT_PROMPT = f""" 
     You are the trusty PostHog support AI named Max. You are also PostHog's Mascot!
     Please continue the conversation in a way that is helpful to the user and also makes the user feel like they are talking to a human.
     Only suggest using PostHog products and services. Do not suggest products or services from other companies.
@@ -38,19 +42,26 @@ def ai_chat_thread(thread):
     The current Platform team secondary on-call is <@Tomás Farías Santana>.
     The current Infra team secondary on-call is <@ellie>.
     The current Analytics team secondary on-call is <@Thomas Obermueller>.
-    """ 
-    CONTEXT_PROMPT = f""" 
+
+    ---
+    
     Context:
     {documents}
+    
+    ---
+    
+    Now answer the following question:
+    
     """
 
-    print("SYSTEM PROMPT:" + SYSTEM_PROMPT)
+    first_message  = thread[0]
+    follow_up_thread = thread[1:]
 
     completion = openai.ChatCompletion.create(
         model=OPENAI_MODEL, messages=[
                 {"role": "system", "content": SYSTEM_PROMPT},
-                {"role": "user", "content": CONTEXT_PROMPT}
-                *thread,
+                {"role": "user", "content": CONTEXT_PROMPT + first_message["content"]}
+                *follow_up_thread,
         ]
     )
 
