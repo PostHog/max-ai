@@ -102,8 +102,8 @@ def chat(messages: List[Message]):
     response = ai_chat_thread(msgs)
     return response
 
-@app.get("/search")
-def search_entries(query: str):
+@app.post("/search")
+def search_entries(query: str, messages: List[Message):
     pipeline = Pipeline()
 
     prompt_template = PromptTemplate(
@@ -127,8 +127,11 @@ def search_entries(query: str):
 
     pipeline.add_node(retriever, name="Retriever", inputs=["Query"])
     pipeline.add_node(shaper, name="Shaper", inputs=["Retriever"])
-    pipeline.add_node(component=prompt_node, name="PromptNode", inputs=["Shaper"])
+    # pipeline.add_node(component=prompt_node, name="PromptNode", inputs=["Shaper"])
     result = pipeline.run(query=query, params={"Retriever": {"top_k": 10}}, debug=True)
+
+    
+
 
     if result is None:
         return []

@@ -19,12 +19,10 @@ def ai_chat_thread(thread):
     Please continue the conversation in a way that is helpful to the user and also makes the user feel like they are talking to a human.
     Only suggest using PostHog products and services. Do not suggest products or services from other companies.
     """
-    prompt = f"{thread}"
     completion = openai.ChatCompletion.create(
         model="gpt-3.5-turbo", messages=[
                 {"role": "system", "content": SYSTEM_PROMPT},
                 *thread,
-                {"role": "user", "content": prompt}
         ]
     )
     return completion.choices[0].message.content
