@@ -48,8 +48,6 @@ pipeline = MaxPipeline(
 
 @app.post("/entries")
 def create_entries(entries: Entries):
-    pipeline.document_store.delete_all_documents()
-
     for entry in entries.entries:
         headings = split_markdown_sections(entry.content)
 
