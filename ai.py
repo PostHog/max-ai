@@ -13,8 +13,6 @@ load_dotenv()
 
 ## Initialize OpenAI
 openai.api_key = os.environ.get("OPENAI_TOKEN")
-models = [m.id for m in openai.Model.list()["data"]]
-print(f"Available models: {', '.join(models)}")
 
 ## "gpt-4" and "gpt-3.5-turbo" are the two we'll use here
 
