@@ -14,7 +14,7 @@ load_dotenv()
 
 posthog.project_api_key = os.environ.get("POSTHOG_API_KEY")
 posthog.host = os.environ.get("POSTHOG_HOST")
-posthog.debug = True
+posthog.capture("max", "message generated")
 
 # Initializes your app with your bot token and signing secret
 app = App(
