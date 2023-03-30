@@ -18,10 +18,9 @@ from ai import ai_chat_thread
 load_dotenv()  # take environment variables from .env.
 
 app = FastAPI()
-origins = ['*']
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -103,7 +102,7 @@ def chat(messages: List[Message]):
     return response
 
 @app.post("/search")
-def search_entries(query: str, messages: List[Message):
+def search_entries(query: str, messages: List[Message]):
     pipeline = Pipeline()
 
     prompt_template = PromptTemplate(

@@ -119,34 +119,34 @@ def handle_message_events(body, logger, say):
     event_type = body["event"]["channel_type"]
     event = body["event"]
     bot_id = body['authorizations'][0]['user_id']
-    print(event_type)
+    print(body) 
     if event_type == "im":
         thread = app.client.conversations_history(channel=event["channel"], limit=CHAT_HISTORY_LIMIT)
-        print(thread)
         thread = preprocess_slack_thread(bot_id, thread)
         response = ai_chat_thread(thread)
         say(response)
 
     # new message in a public channel
     elif "thread_ts" not in event and event["type"] == "message" and event["channel_type"] == "channel":
-        follow_up = classify_question(event["text"])
+        # follow_up = classify_question(event["text"])
 
-        if follow_up:
-            response = get_query_response(event["text"])
-            blocks = [
-                {
-                    "type": "section",
-                    "text": {
-                        "type": "mrkdwn",
-                        "text": response
-                    }
-                },
-                *FEEDBACK_BLOCKS
-            ]
-            say(blocks=blocks, thread_ts=event["ts"])
+        # if follow_up:
+        #     response = get_query_response(event["text"])
+        #     blocks = [
+        #         {
+        #             "type": "section",
+        #             "text": {
+        #                 "type": "mrkdwn",
+        #                 "text": response
+        #             }
+        #         },
+        #         *FEEDBACK_BLOCKS
+        #     ]
+        #     say(blocks=blocks, thread_ts=event["ts"])
         return
     # thread response in a public channel
     elif "thread_ts" in event and event["channel_type"] == "channel":
+        return 
         thread_ts = event["thread_ts"]
         # Call the conversations.replies method with the channel ID and thread timestamp
         # try:
@@ -155,8 +155,6 @@ def handle_message_events(body, logger, say):
 
         thread = preprocess_slack_thread(bot_id, result)
 
-        print(thread)
-            
         # except Exception as e:
         #     print("Error retrieving thread messages: {}".format(e))
         #     return
