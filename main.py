@@ -13,10 +13,18 @@ from pipeline import MaxPipeline
 
 load_dotenv()  # take environment variables from .env.
 
+origins = [
+    "http://localhost",
+    "http://localhost:8001",
+    "http://localhost:8002",
+    "https://app.posthog.com",
+    "https://posthog.com",
+]
+
 app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["http://localhost"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
