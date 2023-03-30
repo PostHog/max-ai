@@ -207,10 +207,22 @@ def handle_app_mention_events(body, logger, say):
         ]
         say(blocks=blocks, thread_ts=thread_ts)
         return
+    
 
     thread = preprocess_slack_thread(bot_id, thread)
     response = ai_chat_thread(thread)
-    say(text=response, thread_ts=thread_ts)
+
+    blocks = [
+        {
+            "type": "section",
+            "text": {
+                "type": "mrkdwn",
+                "text": response
+            }
+        },
+        *FEEDBACK_BLOCKS
+    ]
+    say(blocks=blocks, thread_ts=thread_ts)
 
 
 # Start your app
