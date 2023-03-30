@@ -154,8 +154,16 @@ def handle_app_mention_events(body, logger, say):
         send_message(say, text=summary, thread_ts=thread_ts)
         return
     
-
     thread = preprocess_slack_thread(bot_id, thread)
+
+    use_feature_flag_prompt = classify_question(event["text"])
+    if use_feature_flag_prompt:
+        first_relevant_message = thread[0]["content"]
+        response = get_query_response(first_relevant_message, thread[1:])
+        send_message(say, text=response, thread_ts=thread_ts)
+        return
+    
+
     response = ai_chat_thread(thread)
     send_message(say, text=response, thread_ts=thread_ts)
 
