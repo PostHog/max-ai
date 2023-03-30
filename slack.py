@@ -24,33 +24,8 @@ FEEDBACK_BLOCKS = [
         "type": "section",
         "text": {
             "type": "mrkdwn",
-            "text": "Was this helpful?"
+            "text": "Was this helpful? :thumbsup: or :thumbsdown:"
         }
-    },
-    {
-        "type": "actions",
-        "elements": [
-            {
-                "type": "button",
-                "text": {
-                    "type": "plain_text",
-                    "emoji": True,
-                    "text": "Fire :fire:"
-                },
-                "style": "primary",
-                "value": "yes"
-            },
-            {
-                "type": "button",
-                "text": {
-                    "type": "plain_text",
-                    "emoji": True,
-                    "text": "Mid :face_with_diagonal_mouth:"
-                },
-                "style": "danger",
-                "value": "no"
-            }
-        ]
     }
 ]
 
