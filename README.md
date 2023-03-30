@@ -70,7 +70,7 @@ flowchart TD
 
 It's important to note that we are building these pipelines with [Haystack](https://haystack.deepset.ai/) by deepset. This coordinates the steps of inferencing listed above. It's amazing.
 
-## A poem from Max to his evil twin Hoge 📖
+## 🕯️ A poem from Max to his evil twin Hoge 📖
 ```
 Ah, hoge! Sweet word upon my tongue,
 So blissful, yet so quick to come undone.
