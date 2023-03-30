@@ -3,12 +3,10 @@ import os
 from dotenv import load_dotenv
 import openai
 
-from haystack import Document
 from haystack.document_stores.weaviate import WeaviateDocumentStore
-from haystack.pipelines import Pipeline, GenerativeQAPipeline
-from haystack.nodes import PromptTemplate, PromptModel, PromptNode, Shaper
+from haystack.pipelines import Pipeline
+from haystack.nodes import Shaper
 from haystack.nodes import EmbeddingRetriever
-from haystack.nodes import OpenAIAnswerGenerator
 
 OPENAI_MODEL = "gpt-3.5-turbo"
 load_dotenv()
