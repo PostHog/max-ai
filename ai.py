@@ -3,73 +3,26 @@ import os
 from dotenv import load_dotenv
 import openai
 
-from haystack.document_stores.weaviate import WeaviateDocumentStore
-from haystack.pipelines import Pipeline
-from haystack.nodes import Shaper
-from haystack.nodes import EmbeddingRetriever
+from pipeline import MaxPipeline
 
-OPENAI_MODEL = "gpt-3.5-turbo"
 load_dotenv()
 
+OPENAI_MODEL = "gpt-3.5-turbo"
+OPENAI_TOKEN = os.environ.get("OPENAI_TOKEN")
+
+if not OPENAI_TOKEN:
+    print("Please set OPENAI_TOKEN in your environment variables.")
+    exit()
+
 ## Initialize OpenAI
-openai.api_key = os.environ.get("OPENAI_TOKEN")
+openai.api_key = OPENAI_TOKEN
 
 ## "gpt-4" and "gpt-3.5-turbo" are the two we'll use here
 
-document_store = WeaviateDocumentStore(
-    embedding_dim=1024,
-    custom_schema={
-      "classes": [
-        {
-          "class": "Document",
-          "description": "A class called document",
-          "vectorizer": "text2vec-openai",
-          "moduleConfig": {
-            "text2vec-openai": {
-              "model": "ada",
-              "modelVersion": "002",
-              "type": "text"
-            }
-          },
-          "properties": [
-            {
-              "dataType": [
-                "text"
-              ],
-              "description": "Content that will be vectorized",
-              "moduleConfig": {
-                "text2vec-openai": {
-                  "skip": False,
-                  "vectorizePropertyName": False
-                }
-              },
-              "name": "content"
-            }
-          ]
-        }
-      ]
-    },
-    additional_headers={"X-OpenAI-Api-Key": os.getenv("OPENAI_TOKEN")},
-)
-
-retriever = EmbeddingRetriever(
-    document_store=document_store,
-    batch_size=16,
-    embedding_model="ada",
-    api_key=os.getenv("OPENAI_TOKEN"),
-    max_seq_len=2048,
-)
+pipeline = MaxPipeline(openai_token=OPENAI_TOKEN)
 
 def ai_chat_thread(thread):
-    pipeline = Pipeline()
-
-    shaper = Shaper(func="join_documents", inputs={"documents": "documents"}, outputs=["documents"])
-
-    pipeline.add_node(retriever, name="Retriever", inputs=["Query"])
-    pipeline.add_node(shaper, name="Shaper", inputs=["Retriever"])
-
-    result = pipeline.run(query=thread[0]["content"], params={"Retriever": {"top_k": 10}}, debug=True)
-
+    result = pipeline.retrieve_context(thread[0].content)
     documents = result["documents"][0].content.replace('\n', '')
 
     SYSTEM_PROMPT = f"""
