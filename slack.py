@@ -159,7 +159,7 @@ def handle_app_mention_events(body, logger, say):
     send_message(say, text=response, thread_ts=thread_ts)
 
 def send_message(say, text, thread_ts):
-    posthog.capture(distinct_id="max", event="message generated", properties={"message": text, "thread_ts": thread_ts})
+    posthog.capture("max", "message generated", {"message": text, "thread_ts": thread_ts})
     if thread_ts:
         say(text=text, thread_ts=thread_ts)
     else:
