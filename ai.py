@@ -60,7 +60,7 @@ def ai_chat_thread(thread):
     completion = openai.ChatCompletion.create(
         model=OPENAI_MODEL, messages=[
                 {"role": "system", "content": SYSTEM_PROMPT},
-                {"role": "user", "content": CONTEXT_PROMPT + first_message["content"]}
+                {"role": "user", "content": CONTEXT_PROMPT + first_message["content"]},
                 *follow_up_thread,
         ]
     )
