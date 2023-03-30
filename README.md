@@ -1,4 +1,5 @@
 # MaxAI 
+<img src='./image/MaxAI.png' alt='MaxAI' width=250 height=250 />
 
 MaxAI is our `trusty PostHog support AI` deployed on our Slack, app, and website.
 
