@@ -56,10 +56,17 @@ class MaxPipeline:
         )
 
     def embed_documents(self, documents: List[Document]):
-        self.document_store.write_documents(documents)
+        doc_ids = [doc.id for doc in documents]
+
+        existing_docs = self.document_store.get_documents_by_id(doc_ids)
+        # only add documents that are not already in the document store
+        # TODO: Check the contentHash if ID's match so we update records if the content has changed
+        new_docs = [doc for doc in documents if doc.id not in existing_docs]
+
+        self.document_store.write_documents(new_docs)
         self.document_store.update_embeddings(self.retriever, filters={
             # only update embeddings for docs we just inserted
-            "id": {"$in": [doc.id for doc in documents]}
+            "id": {"$in": [doc.id for doc in new_docs]}
         })
 
     def retrieve_context(self, query: str):
