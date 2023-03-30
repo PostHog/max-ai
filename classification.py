@@ -51,7 +51,6 @@ def classify_question(question, model=OpenAIModel.GPT_3_TURBO.value):
   )
 
   classification = api_response["choices"][0]["message"]["content"]
-  print(classification)
 
   return "FEATURE FLAGS" in classification or "EXPERIMENTS" in classification
 

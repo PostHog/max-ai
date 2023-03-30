@@ -156,9 +156,10 @@ def handle_app_mention_events(body, logger, say):
     
     thread = preprocess_slack_thread(bot_id, thread)
 
-    use_feature_flag_prompt = classify_question(event["text"])
+    first_relevant_message = thread[0]["content"]
+    use_feature_flag_prompt = classify_question(first_relevant_message)
     if use_feature_flag_prompt:
-        first_relevant_message = thread[0]["content"]
+        print("using feature flag prompt for ", first_relevant_message)
         response = get_query_response(first_relevant_message, thread[1:])
         send_message(say, text=response, thread_ts=thread_ts)
         return
