@@ -35,7 +35,7 @@ FEEDBACK_BLOCKS = [
                 "text": {
                     "type": "plain_text",
                     "emoji": True,
-                    "text": "Yes"
+                    "text": "Fire :fire:"
                 },
                 "style": "primary",
                 "value": "yes"
@@ -45,7 +45,7 @@ FEEDBACK_BLOCKS = [
                 "text": {
                     "type": "plain_text",
                     "emoji": True,
-                    "text": "No"
+                    "text": "Mid :face_with_diagonal_mouth:"
                 },
                 "style": "danger",
                 "value": "no"
