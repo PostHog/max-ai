@@ -85,12 +85,16 @@ def ai_chat_thread(thread):
     Context:
     {documents}
     """
+
+    print("SYSTEM PROMPT:" + SYSTEM_PROMPT)
+
     completion = openai.ChatCompletion.create(
         model=OPENAI_MODEL, messages=[
                 {"role": "system", "content": SYSTEM_PROMPT},
                 *thread,
         ]
     )
+
     return completion.choices[0].message.content
 
 
