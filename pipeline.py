@@ -55,12 +55,12 @@ class MaxPipeline:
             max_seq_len=2048,
         )
 
-
     def embed_documents(self, documents: List[Document]):
         self.document_store.write_documents(documents)
-
-    def update_embeddings(self):
-        self.document_store.update_embeddings(self.retriever)
+        self.document_store.update_embeddings(self.retriever, filters={
+            # only update embeddings for docs we just inserted
+            "id": {"$in": [doc.id for doc in documents]}
+        })
 
     def retrieve_context(self, query: str):
         pipeline = Pipeline()

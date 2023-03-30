@@ -47,8 +47,6 @@ def create_entries(entries: Entries):
         documents = [Document(content=doc) for doc in headings]
         pipeline.embed_documents(documents)
 
-    pipeline.update_embeddings()
-
     return []
 
 @app.post("/chat")
