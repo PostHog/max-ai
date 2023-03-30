@@ -48,11 +48,15 @@ pipeline = MaxPipeline(
 
 @app.post("/entries")
 def create_entries(entries: Entries):
+    pipeline.document_store.delete_all_documents(index="ContextDocument")
+
     for entry in entries.entries:
         headings = split_markdown_sections(entry.content)
 
-        documents = [Document(id=generate_uuid5(doc), content=doc, content_type='text', meta=entry.meta) for doc in headings]
+        documents = [Document(id=generate_uuid5(doc), content=doc, content_type='text', meta=entry.meta) for doc in headings if doc]
         pipeline.embed_documents(documents)
+
+    pipeline.update_embeddings()
 
     return []
 
