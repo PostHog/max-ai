@@ -57,8 +57,9 @@ It's important to note that we are building these pipelines with [Haystack](http
 
 ```mermaid
 flowchart TD
-    A[User Question] -->|Query Weaviate| B(Related Documents)
-    B -->|Collect Prompt Params| C{Prompt Context}
+    A[User Question] -->|Embed| I(Question Vector)
+    I -->|Query Weaviate|J[Most Similar Docs]
+    J -->|Collect Prompt Params| C{Prompt Context}
     C --> D[Limitations]
     C --> E[Personality]
     C --> F[Context Docs]
