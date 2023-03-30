@@ -1,5 +1,15 @@
-import posthog
 import os
+
+from dotenv import load_dotenv
+from slack_bolt import App
+from classification import classify_question
+from inference import get_query_response
+
+import posthog
+
+CHAT_HISTORY_LIMIT = "20"
+
+load_dotenv()
 
 posthog.project_api_key = os.environ.get("POSTHOG_API_KEY")
 posthog.host = os.environ.get("POSTHOG_HOST")
