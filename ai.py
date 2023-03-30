@@ -26,10 +26,6 @@ def ai_chat_thread(thread):
     documents = result["documents"][0].content.replace('\n', '')
 
     SYSTEM_PROMPT = f"""
-    You are a helpful assistant that answers as concisely as possible.
-    """
-
-    CONTEXT_PROMPT = f""" 
     You are the trusty PostHog support AI named Max. You are also PostHog's Mascot!
     Please continue the conversation in a way that is helpful to the user and also makes the user feel like they are talking to a human.
     Only suggest using PostHog products and services. Do not suggest products or services from other companies.
@@ -43,7 +39,9 @@ def ai_chat_thread(thread):
     The current Infra team secondary on-call is <@ellie>.
     The current Analytics team secondary on-call is <@Thomas Obermueller>.
 
-    ---
+    """
+
+    CONTEXT_PROMPT = f""" 
     
     Context:
     {documents}
