@@ -10,6 +10,16 @@ How Max works is surprisingly simple:
 
 ### Embedding time
 
+```mermaid
+flowchart TD
+    A[Github]
+    B[Docs]
+    C[Squeak]
+    A -->|Calculate Embed Vectors|D[Weaviate]
+    B -->|Calculate Embed Vectors|D
+    C -->|Calculate Embed Vectors|D
+```
+
 #### Embedding Docs
 
 - Grab and parse all of the markdown from our docs and website
@@ -44,4 +54,17 @@ How Max works is surprisingly simple:
 - Finally we send these messages to wherever Max is having a conversation. 
 
 It's important to note that we are building these pipelines with [Haystack](https://haystack.deepset.ai/) by deepset. This coordinates the steps of inferencing listed above. It's amazing.
+
+```mermaid
+flowchart TD
+    A[User Question] -->|Query Weaviate| B(Related Documents)
+    B -->|Collect Prompt Params| C{Prompt Context}
+    C --> D[Limitations]
+    C --> E[Personality]
+    C --> F[Context Docs]
+    F --> G[String Prompt]
+    E --> G
+    D --> G
+    G -->|Query OpenAI|H[AI Response]
+```
 
