@@ -141,7 +141,8 @@ def handle_emoji_changed_events(body, logger, say):
 def handle_app_mention_events(body, logger, say):
     try:
         _handle_app_mention_events(body, logger, say)
-    except:
+    except Exception as e:
+        print(e) 
         send_message(say, text="I'm a little over capacity right now. Please try again in a few minutes! :sleeping-hog:")
 
 def _handle_app_mention_events(body, logger, say):
