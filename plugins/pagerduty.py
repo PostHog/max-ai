@@ -1,7 +1,6 @@
 import datetime
 import os
 
-from pprint import pprint
 
 from dotenv import load_dotenv
 from pdpyras import APISession, PDClientError
@@ -58,7 +57,7 @@ def current_oncalls():
         oncalls[schedule_name] = []
         for user in oncall_users:
             summary = user.get('summary', 'no summary')
-            email = user.get('email', 'no email')
+            user.get('email', 'no email')
             oncalls[schedule_name].append(summary)
     return oncalls 
 

@@ -106,7 +106,7 @@ def handle_message_events(body, logger, say):
         # Call the conversations.replies method with the channel ID and thread timestamp
         # try:
         result = app.client.conversations_replies(channel=event["channel"], ts=thread_ts)
-        messages = result["messages"]
+        result["messages"]
 
         thread = preprocess_slack_thread(bot_id, result)
 

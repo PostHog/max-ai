@@ -1,4 +1,3 @@
-import os
 from typing import List
 from haystack import Document
 from haystack.document_stores.weaviate import WeaviateDocumentStore
