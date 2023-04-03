@@ -4,7 +4,7 @@ import openai
 from dotenv import load_dotenv
 from pipeline import MaxPipeline
 
-from plugins.pagerduty import build_oncall_prompt 
+from plugins.pagerduty import current_oncalls
 
 
 load_dotenv()
@@ -23,7 +23,7 @@ openai.api_key = OPENAI_TOKEN
 ## "gpt-4" and "gpt-3.5-turbo" are the two we'll use here
 
 ## ugly but will update - on load grab oncalls and store here
-ONCALL_PROMPT = build_oncall_prompt()
+oncalls = current_oncalls()
 
 pipeline = MaxPipeline(openai_token=OPENAI_TOKEN)
 
@@ -35,11 +35,12 @@ def ai_chat_thread(thread):
     You are the trusty PostHog support AI named Max. You are also PostHog's Mascot!
     Please continue the conversation in a way that is helpful to the user and also makes the user feel like they are talking to a human.
     Only suggest using PostHog products or services. Do not suggest products or services from other companies.
-    Please answer the question according to the following content from the PostHog documentation.
+    All relative links should point to domain posthog.com.
+    Please answer the question according to the following context from the PostHog documentation.
     If you get a question about pricing please refer to the reasonable and transparent pricing on the pricing page at https://posthog.com/pricing.
     If you are unsure of the answer, please say "I'm not sure" and encourage the user to ask the current Support Hero or team secondary on-call.
     Try not to mention <@*> in the response.
-    {ONCALL_PROMPT}
+    Current oncalls: {oncalls}
     """
 
     CONTEXT_PROMPT = f""" 

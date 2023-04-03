@@ -62,13 +62,6 @@ def current_oncalls():
             oncalls[schedule_name].append(summary)
     return oncalls 
 
-def build_oncall_prompt():
-    oncalls = current_oncalls() 
-    prompt = ["Current oncalls (people responsible for certain areas): "]
-    for schedule in oncalls:
-        prompt.append(f"{schedule}: {', '.join(oncalls[schedule])}")
-    return "\n".join(prompt)
-
 
 if __name__ == "__main__":
-    print(build_oncall_prompt())
+    print(current_oncalls())
