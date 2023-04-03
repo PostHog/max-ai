@@ -5,7 +5,7 @@ FROM python:3.10-slim as builder
 WORKDIR /install
 
 # Install system dependencies
-RUN apt-get update && apt-get install -y --no-install-recommends gcc g++
+RUN apt-get update && apt-get install -y --no-install-recommends gcc g++ libc6-dev
 
 # Install pip dependencies and build wheels
 COPY requirements.txt .
