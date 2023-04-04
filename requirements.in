@@ -7,3 +7,4 @@ posthog==2.4.2
 posthoganalytics>=2.4.2
 slack-bolt==1.17.0
 tiktoken>=0.3.0
+uvicorn>=0.21.1
