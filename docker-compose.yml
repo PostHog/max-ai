@@ -15,3 +15,7 @@ services:
       ENABLE_MODULES: text2vec-openai
       OPENAI_APIKEY: <OPENAI_API_KEY>
       CLUSTER_HOSTNAME: 'node1'
+  max:
+    build: .
+    ports:
+      - "8000:8000"
