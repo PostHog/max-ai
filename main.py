@@ -70,6 +70,11 @@ def chat(messages: List[Message]):
     response = ai_chat_thread(msgs)
     return response
 
+@app.get("/_health")
+def health():
+    return {"status": "ok"}
+
+
 def split_markdown_sections(markdown_content):
     header_pattern = re.compile(r"(^#+\s+.*$)", re.MULTILINE)
     sections = []
