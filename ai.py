@@ -2,10 +2,9 @@ import os
 
 import openai
 from dotenv import load_dotenv
+
 from pipeline import MaxPipeline
-
 from plugins.pagerduty import current_oncalls
-
 
 load_dotenv()
 

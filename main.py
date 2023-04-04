@@ -1,20 +1,18 @@
 import os
-from dotenv import load_dotenv
+import re
 from typing import List
+
+from dotenv import load_dotenv
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
 from haystack import Document
-from weaviate.util import generate_uuid5
-import re
-
+from pydantic import BaseModel
 from slack_bolt import App
 from slack_bolt.adapter.fastapi import SlackRequestHandler
+from weaviate.util import generate_uuid5
 
-import slack
 from ai import ai_chat_thread
 from pipeline import MaxPipeline
-
 
 load_dotenv()  # take environment variables from .env.
 

@@ -1,13 +1,12 @@
 import os
+import re
 from typing import List
 
 from dotenv import load_dotenv
 from haystack import Document
 from haystack.document_stores.weaviate import WeaviateDocumentStore
+from haystack.nodes import EmbeddingRetriever, Shaper
 from haystack.pipelines import Pipeline
-from haystack.nodes import Shaper
-import re
-from haystack.nodes import EmbeddingRetriever
 
 load_dotenv()
 

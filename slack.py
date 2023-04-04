@@ -1,12 +1,12 @@
 import os
 
+import posthoganalytics as posthog
 from dotenv import load_dotenv
 from slack_bolt import App
-from classification import classify_question
-from inference import get_query_response
 
 from ai import ai_chat_thread, summarize_thread
-import posthoganalytics as posthog
+from classification import classify_question
+from inference import get_query_response
 
 CHAT_HISTORY_LIMIT = "20"
 
