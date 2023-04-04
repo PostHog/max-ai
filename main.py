@@ -1,13 +1,17 @@
 import os
 from dotenv import load_dotenv
 from typing import List
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from haystack import Document
 from weaviate.util import generate_uuid5
 import re
 
+from slack_bolt import App
+from slack_bolt.adapter.fastapi import SlackRequestHandler
+
+import slack
 from ai import ai_chat_thread
 from pipeline import MaxPipeline
 
@@ -22,6 +26,8 @@ origins = [
     "https://posthog.com",
 ]
 
+# FastAPI App
+
 app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
@@ -30,6 +36,11 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Slack Bolt App
+
+slack_app = App()
+app_handler = SlackRequestHandler(slack_app)
 
 class Entry(BaseModel):
     content: str
@@ -74,6 +85,9 @@ def chat(messages: List[Message]):
 def health():
     return {"status": "ok"}
 
+@app.post("/slack/events")
+async def slack_events(req: Request):
+    return await app_handler.handle(req)
 
 def split_markdown_sections(markdown_content):
     header_pattern = re.compile(r"(^#+\s+.*$)", re.MULTILINE)
