@@ -1,4 +1,7 @@
+import os
 from typing import List
+
+from dotenv import load_dotenv
 from haystack import Document
 from haystack.document_stores.weaviate import WeaviateDocumentStore
 from haystack.pipelines import Pipeline
@@ -6,11 +9,14 @@ from haystack.nodes import Shaper
 import re
 from haystack.nodes import EmbeddingRetriever
 
+load_dotenv()
+
 class MaxPipeline:
     def __init__(self, openai_token: str):
         self.openai_token = openai_token
 
         self.document_store = WeaviateDocumentStore(
+            host=os.getenv("WEAVIATE_HOST", "http://localhost:8080"),
             embedding_dim=1024,
             custom_schema={
               "classes": [
