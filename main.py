@@ -2,6 +2,7 @@ import os
 import re
 from typing import List
 
+import slack # noqa
 from dotenv import load_dotenv
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
