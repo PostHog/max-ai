@@ -16,7 +16,8 @@ class MaxPipeline:
         self.openai_token = openai_token
 
         self.document_store = WeaviateDocumentStore(
-            host=os.getenv("WEAVIATE_HOST", "http://localhost:8080"),
+            host=os.getenv("WEAVIATE_HOST", "http://localhost"),
+            port=os.getenv("WEAVIATE_PORT", 8080),
             embedding_dim=1024,
             custom_schema={
               "classes": [
