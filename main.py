@@ -2,18 +2,17 @@ import os
 import re
 from typing import List
 
-import slack # noqa
 from dotenv import load_dotenv
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from haystack import Document
 from pydantic import BaseModel
-from slack_bolt import App
 from slack_bolt.adapter.fastapi import SlackRequestHandler
 from weaviate.util import generate_uuid5
 
 from ai import ai_chat_thread
 from pipeline import MaxPipeline
+from slack import app as slack_app
 
 load_dotenv()  # take environment variables from .env.
 
@@ -38,7 +37,6 @@ app.add_middleware(
 
 # Slack Bolt App
 
-slack_app = App()
 app_handler = SlackRequestHandler(slack_app)
 
 class Entry(BaseModel):
