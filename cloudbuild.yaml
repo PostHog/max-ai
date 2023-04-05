@@ -1,4 +1,4 @@
-steps:
+ steps:
  # Build the container image
  - name: 'gcr.io/cloud-builders/docker'
    args: ['build', '-t', 'gcr.io/$PROJECT_ID/max-ai:$COMMIT_SHA', '.']
@@ -13,7 +13,7 @@ steps:
    - 'deploy'
    - 'max-ai'
    - '--image'
-   - 'gcr.io/$PROJECT_ID/SERVICE-NAME:$COMMIT_SHA'
+   - 'gcr.io/$PROJECT_ID/max-ai:$COMMIT_SHA'
    - '--region'
    - 'us-central1'
  images:
