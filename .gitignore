@@ -170,3 +170,7 @@ node_modules/
 !.yarn/sdks
 !.yarn/versions
 *.swp
+
+*.db
+*.sqlite
+*.sqlite3

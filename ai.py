@@ -26,6 +26,7 @@ def update_oncalls():
     print("updating oncalls")
     global oncalls
     oncalls = current_oncalls()
+    return oncalls
 
 
 pipeline = MaxPipeline(openai_token=OPENAI_TOKEN)

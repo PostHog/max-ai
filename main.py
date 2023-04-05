@@ -19,7 +19,7 @@ load_dotenv()  # take environment variables from .env.
 
 # Scheduled tasks to keep things fresh
 scheduler.add_job(update_oncalls, trigger="interval", minutes=5)
-
+scheduler.start()
 
 origins = [
     "http://localhost",
@@ -71,10 +71,17 @@ def create_entries(entries: Entries):
 
     return []
 
+
 @app.post("/spawn")
 def receive_spawn():
     print("Spawned")
     return []
+
+
+@app.post("/update")
+def update_oncall():
+    return update_oncalls()
+
 
 @app.post("/chat")
 def chat(messages: List[Message]):
