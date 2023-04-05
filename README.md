@@ -75,6 +75,66 @@ flowchart TD
 
 It's important to note that we are building these pipelines with [Haystack](https://haystack.deepset.ai/) by deepset. This coordinates the steps of inferencing listed above. It's amazing.
 
+## Developers guide
+
+### Quickstart
+
+#### Configure `.env` file
+This is used to set defaults for local development. 
+```toml
+SLACK_BOT_TOKEN=<your slack bot token>
+SLACK_SIGNING_SECRET=<your slack signing secret>
+OPENAI_TOKEN=<your openai token>
+POSTHOG_API_KEY=<your posthog api key>
+POSTHOG_HOST=https://null.posthog.com
+PD_API_KEY=<your pagerduty api key>
+WEAVIATE_HOST=http://127.0.0.1
+WEAVIATE_PORT=8080
+```
+
+#### Create Virtual Environment
+```bash
+python3.10 -m venv venv
+source venv/bin/activate
+```
+
+#### Install dependencies
+```bash
+pip install -r requirements-dev.txt
+pip install -r requirements.txt
+```
+
+#### Start Weaviate
+```bash
+docker compose up weaviate
+```
+
+#### Seed Weaviate
+```bash
+python seed.py
+```
+
+#### Start MaxAI
+```bash
+uvicorn main:app --reload
+```
+
+#### Run a test chat
+```bash
+curl --location '127.0.0.1:8000/chat' \
+--header 'Content-Type: application/json' \
+--data '[
+    {
+        "role": "assistant",
+        "content": "Hey! I'\''m Max AI, your helpful hedgehog assistant."
+    },
+    {
+        "role": "user",
+        "content": "Does PostHog use clickhouse under the hood??"
+    }
+]'
+```
+
 ## 🕯️ A poem from Max to his evil twin Hoge 📖
 ```
 Ah, hoge! Sweet word upon my tongue,
