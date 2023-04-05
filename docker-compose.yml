@@ -15,6 +15,7 @@ services:
       ENABLE_MODULES: text2vec-openai
       OPENAI_APIKEY: <OPENAI_API_KEY>
       CLUSTER_HOSTNAME: 'node1'
+
   max:
     build: .
     environment:
@@ -24,7 +25,16 @@ services:
       POSTHOG_API_KEY: <POSTHOG_API_KEY>
       POSTHOG_HOST: app.posthog.com
       PD_API_KEY: <PD_API_KEY>
-      WEAVIATE_HOST: <WEAVIATE_HOST>
-      WEAVIATE_PORT: <WEAVIATE_PORT>
+      WEAVIATE_HOST: "http://weaviate"
+      WEAVIATE_PORT: 8080
     ports:
       - "8000:8000"
+
+  seed:
+    build: .
+    command: python seed.py
+    restart: 'no'
+    deploy:
+      replicas: 0
+    depends_on:
+      - weaviate

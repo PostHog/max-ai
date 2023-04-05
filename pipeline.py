@@ -20,33 +20,33 @@ class MaxPipeline:
             embedding_dim=1024,
             custom_schema={
               "classes": [
-                # {
-                #   "class": "Document",
-                #   "description": "A class called document",
-                #   "vectorizer": "text2vec-openai",
-                #   "moduleConfig": {
-                #     "text2vec-openai": {
-                #       "model": "ada",
-                #       "modelVersion": "002",
-                #       "type": "text"
-                #     }
-                #   },
-                #   "properties": [
-                #     {
-                #       "dataType": [
-                #         "text"
-                #       ],
-                #       "description": "Content that will be vectorized",
-                #       "moduleConfig": {
-                #         "text2vec-openai": {
-                #           "skip": False,
-                #           "vectorizePropertyName": False
-                #         }
-                #       },
-                #       "name": "content"
-                #     }
-                #   ]
-                # },
+                {
+                  "class": "Document",
+                  "description": "The first of its kind",
+                  "vectorizer": "text2vec-openai",
+                  "moduleConfig": {
+                    "text2vec-openai": {
+                      "model": "ada",
+                      "modelVersion": "002",
+                      "type": "text"
+                    }
+                  },
+                  "properties": [
+                    {
+                      "dataType": [
+                        "text"
+                      ],
+                      "description": "The second of its kind",
+                      "moduleConfig": {
+                        "text2vec-openai": {
+                          "skip": False,
+                          "vectorizePropertyName": False
+                        }
+                      },
+                      "name": "content"
+                    }
+                  ]
+                },
                 {
                   "class": "ContextDocument",
                   "vectorizer": "text2vec-openai",

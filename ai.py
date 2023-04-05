@@ -19,12 +19,17 @@ if not OPENAI_TOKEN:
 ## Initialize OpenAI
 openai.api_key = OPENAI_TOKEN
 
-## "gpt-4" and "gpt-3.5-turbo" are the two we'll use here
+oncalls = ""
 
-## ugly but will update - on load grab oncalls and store here
-oncalls = current_oncalls()
+
+def update_oncalls():
+    print("updating oncalls")
+    global oncalls
+    oncalls = current_oncalls()
+
 
 pipeline = MaxPipeline(openai_token=OPENAI_TOKEN)
+
 
 def ai_chat_thread(thread):
     result = pipeline.retrieve_context(thread[0]["content"])

@@ -1,5 +1,4 @@
 import os
-import re
 from typing import List
 
 from dotenv import load_dotenv
@@ -10,11 +9,17 @@ from pydantic import BaseModel
 from slack_bolt.adapter.fastapi import SlackRequestHandler
 from weaviate.util import generate_uuid5
 
-from ai import ai_chat_thread
-from pipeline import MaxPipeline
+from ai import update_oncalls, ai_chat_thread
+from background_tasks import scheduler
+from pipeline import split_markdown_sections, MaxPipeline
 from slack import app as slack_app
 
 load_dotenv()  # take environment variables from .env.
+
+
+# Scheduled tasks to keep things fresh
+scheduler.add_job(update_oncalls, trigger="interval", minutes=5)
+
 
 origins = [
     "http://localhost",
@@ -85,21 +90,4 @@ def health():
 @app.post("/slack/events")
 async def slack_events(req: Request):
     return await app_handler.handle(req)
-
-def split_markdown_sections(markdown_content):
-    header_pattern = re.compile(r"(^#+\s+.*$)", re.MULTILINE)
-    sections = []
-
-    matches = list(header_pattern.finditer(markdown_content))
-    if not matches:
-        return [markdown_content]
-
-    for i, match in enumerate(matches[:-1]):
-        section_start = match.start()
-        section_end = matches[i + 1].start()
-        sections.append(markdown_content[section_start:section_end].strip())
-
-    sections.append(markdown_content[matches[-1].start():].strip())
-
-    return sections
 
