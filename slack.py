@@ -77,7 +77,7 @@ def preprocess_slack_thread(bot_id, thread):
 @app.command("/summarize")
 async def handle_summarize_slash_command(ack, say, command):
     ack()
-    send_message(text="Hi there")
+    await send_message(text="Hi there")
 
 
 @app.event("message")
@@ -90,7 +90,7 @@ async def handle_message_events(body, logger, say):
         thread = app.client.conversations_history(channel=event["channel"], limit=CHAT_HISTORY_LIMIT)
         thread = preprocess_slack_thread(bot_id, thread)
         response = ai_chat_thread(thread)
-        send_message(say, response)
+        await send_message(say, response)
 
     # new message in a public channel
     elif "thread_ts" not in event and event["type"] == "message" and event["channel_type"] == "channel":
@@ -130,7 +130,7 @@ async def handle_message_events(body, logger, say):
         question = thread[0]["content"]
         response = get_query_response(question, thread)
 
-        send_message(say, text=response, thread_ts=event["thread_ts"])
+        await send_message(say, text=response, thread_ts=event["thread_ts"])
 
 @app.event("emoji_changed")
 async def handle_emoji_changed_events(body, logger, say):
@@ -143,7 +143,7 @@ async def handle_app_mention_events(body, logger, say):
         _handle_app_mention_events(body, logger, say)
     except Exception as e:
         print(e) 
-        send_message(say, text="I'm a little over capacity right now. Please try again in a few minutes! :sleeping-hog:")
+        await send_message(say, text="I'm a little over capacity right now. Please try again in a few minutes! :sleeping-hog:")
 
 def _handle_app_mention_events(body, logger, say):
     logger.info(body)
@@ -157,9 +157,9 @@ def _handle_app_mention_events(body, logger, say):
         channel=event["channel"], ts=thread_ts, limit=CHAT_HISTORY_LIMIT
     )
     if "please summarize this" in event["text"].lower():
-        send_message(say, text="On it!", thread_ts=thread_ts, user_id=user_id, thread=thread)
+        await send_message(say, text="On it!", thread_ts=thread_ts, user_id=user_id, thread=thread)
         summary = summarize_thread(thread)
-        send_message(say, text=summary, thread_ts=thread_ts, user_id=user_id, thread=thread)
+        await send_message(say, text=summary, thread_ts=thread_ts, user_id=user_id, thread=thread)
         return
     
     thread = preprocess_slack_thread(bot_id, thread)
@@ -169,19 +169,19 @@ def _handle_app_mention_events(body, logger, say):
     if use_feature_flag_prompt:
         print("using feature flag prompt for ", first_relevant_message)
         response = get_query_response(first_relevant_message, thread[1:])
-        send_message(say, text=response, thread_ts=thread_ts, user_id=user_id, thread=thread)
+        await send_message(say, text=response, thread_ts=thread_ts, user_id=user_id, thread=thread)
         return
     
 
     response = ai_chat_thread(thread)
-    send_message(say, text=response, thread_ts=thread_ts, user_id=user_id, thread=thread)
+    await send_message(say, text=response, thread_ts=thread_ts, user_id=user_id, thread=thread)
 
-def send_message(say, text, thread_ts=None, user_id=None, thread=None):
+async def send_message(say, text, thread_ts=None, user_id=None, thread=None):
     posthog.capture("max", "message generated", {"message": text, "thread_ts": thread_ts, "sender": user_id, "context": thread})
     if thread_ts:
-        say(text=text, thread_ts=thread_ts)
+        await say(text=text, thread_ts=thread_ts)
     else:
-        say(text)
+        await say(text)
 
 def get_user_id(body):
     return body.get("event", {}).get("user", None)
