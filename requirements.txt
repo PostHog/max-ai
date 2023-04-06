@@ -12,8 +12,6 @@ alembic==1.10.2
     # via mlflow
 anyio==3.6.2
     # via starlette
-apscheduler==3.10.1
-    # via -r requirements.in
 async-timeout==4.0.2
     # via aiohttp
 attrs==22.2.0
@@ -266,11 +264,8 @@ python-dotenv==1.0.0
     # via -r requirements.in
 pytz==2022.7.1
     # via
-    #   apscheduler
     #   mlflow
     #   pandas
-pytz-deprecation-shim==0.1.0.post0
-    # via tzlocal
 pyyaml==6.0
     # via
     #   huggingface-hub
@@ -335,7 +330,6 @@ shap==0.41.0
     # via mlflow
 six==1.16.0
     # via
-    #   apscheduler
     #   azure-core
     #   databricks-cli
     #   isodate
@@ -411,11 +405,7 @@ typing-extensions==4.5.0
     #   sqlalchemy
     #   torch
 tzdata==2023.3
-    # via
-    #   pandas
-    #   pytz-deprecation-shim
-tzlocal==4.3
-    # via apscheduler
+    # via pandas
 urllib3==1.26.15
     # via
     #   docker

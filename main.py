@@ -10,16 +10,11 @@ from slack_bolt.adapter.fastapi import SlackRequestHandler
 from weaviate.util import generate_uuid5
 
 from ai import update_oncalls, ai_chat_thread
-from background_tasks import scheduler
 from pipeline import split_markdown_sections, MaxPipeline
 from slack import app as slack_app
 
 load_dotenv()  # take environment variables from .env.
 
-
-# Scheduled tasks to keep things fresh
-scheduler.add_job(update_oncalls, trigger="interval", minutes=5)
-scheduler.start()
 
 origins = [
     "http://localhost",
