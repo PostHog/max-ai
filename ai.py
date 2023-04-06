@@ -32,7 +32,7 @@ def update_oncalls():
 pipeline = MaxPipeline(openai_token=OPENAI_TOKEN)
 
 
-def ai_chat_thread(thread):
+async def ai_chat_thread(thread):
     result = pipeline.retrieve_context(thread[0]["content"])
     documents = result["documents"][0].content.replace('\n', '')
 
@@ -69,16 +69,16 @@ def ai_chat_thread(thread):
         ]
     print(prompt)
 
-    completion = openai.ChatCompletion.create(
+    completion = await openai.ChatCompletion.create(
         model=OPENAI_MODEL, messages=prompt
     )
 
     return completion.choices[0].message.content
 
 
-def summarize_thread(thread):
+async def summarize_thread(thread):
     prompt = f"""Summarize this: {thread}"""
-    completion = openai.ChatCompletion.create(
+    completion = await openai.ChatCompletion.create(
         model=OPENAI_MODEL, messages=[{"role": "user", "content": prompt}]
     )
     return completion.choices[0].message.content

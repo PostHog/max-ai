@@ -605,7 +605,7 @@ class OpenAIModel(Enum):
   GPT_3_TURBO = "gpt-3.5-turbo"
 
 
-def get_query_response(question, follow_up_messages=None, model=OpenAIModel.GPT_3_TURBO.value):
+async def get_query_response(question, follow_up_messages=None, model=OpenAIModel.GPT_3_TURBO.value):
 
   if model == OpenAIModel.GPT_4.value:
     full_prompt = prompt + extended_prompt + suffix + question
@@ -620,7 +620,7 @@ def get_query_response(question, follow_up_messages=None, model=OpenAIModel.GPT_
   if follow_up_messages:
     messages += follow_up_messages
 
-  api_response = openai.ChatCompletion.create(
+  api_response = await openai.ChatCompletion.create(
     model=model,
     messages=messages
   )

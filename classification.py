@@ -48,13 +48,13 @@ Now classify the question below. Remember to return only one word.
 
 
 
-def classify_question(question, model=OpenAIModel.GPT_3_TURBO.value):
+async def classify_question(question, model=OpenAIModel.GPT_3_TURBO.value):
   messages = [
     {"role": "system", "content": "You are a helpful assistant that answers user queries."},
     {"role": "user", "content": prompt + question},
   ]
 
-  api_response = openai.ChatCompletion.create(
+  api_response = await openai.ChatCompletion.create(
     model=model,
     messages=messages
   )

@@ -88,9 +88,9 @@ async def handle_message_events(body, logger, say):
     bot_id = body['authorizations'][0]['user_id']
     print(body) 
     if event_type == "im":
-        thread = app.client.conversations_history(channel=event["channel"], limit=CHAT_HISTORY_LIMIT)
+        thread = await app.client.conversations_history(channel=event["channel"], limit=CHAT_HISTORY_LIMIT)
         thread = preprocess_slack_thread(bot_id, thread)
-        response = ai_chat_thread(thread)
+        response = await ai_chat_thread(thread)
         await send_message(say, response)
 
     # new message in a public channel
@@ -166,14 +166,14 @@ async def _handle_app_mention_events(body, logger, say):
     thread = preprocess_slack_thread(bot_id, thread)
 
     first_relevant_message = thread[0]["content"]
-    use_feature_flag_prompt = classify_question(first_relevant_message)
+    use_feature_flag_prompt = await classify_question(first_relevant_message)
     if use_feature_flag_prompt:
         print("using feature flag prompt for ", first_relevant_message)
-        response = get_query_response(first_relevant_message, thread[1:])
+        response = await get_query_response(first_relevant_message, thread[1:])
         await send_message(say, text=response, thread_ts=thread_ts, user_id=user_id, thread=thread)
         return
     
-    response = ai_chat_thread(thread)
+    response = await ai_chat_thread(thread)
     await send_message(say, text=response, thread_ts=thread_ts, user_id=user_id, thread=thread)
 
 
