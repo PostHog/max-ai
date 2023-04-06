@@ -2,7 +2,7 @@ import os
 
 import posthoganalytics as posthog
 from dotenv import load_dotenv
-from slack_bolt import App
+from slack_bolt.async_app import AsyncApp
 
 from ai import ai_chat_thread, summarize_thread
 from classification import classify_question
@@ -16,7 +16,7 @@ posthog.project_api_key = os.environ.get("POSTHOG_API_KEY")
 posthog.host = os.environ.get("POSTHOG_HOST")
 
 # Initializes your app with your bot token and signing secret
-app = App(
+app = AsyncApp(
     token=os.environ.get("SLACK_BOT_TOKEN"),
     signing_secret=os.environ.get("SLACK_SIGNING_SECRET"),
 )
@@ -24,7 +24,7 @@ app = App(
 # Add functionality here
 # @app.event("app_home_opened") etc
 @app.event("app_home_opened")
-def update_home_tab(client, event, logger):
+async def update_home_tab(client, event, logger):
     try:
         # views.publish is the method that your app uses to push a view to the Home tab
         client.views_publish(
@@ -75,13 +75,13 @@ def preprocess_slack_thread(bot_id, thread):
 
 
 @app.command("/summarize")
-def handle_summarize_slash_command(ack, say, command):
+async def handle_summarize_slash_command(ack, say, command):
     ack()
     send_message(text="Hi there")
 
 
 @app.event("message")
-def handle_message_events(body, logger, say):
+async def handle_message_events(body, logger, say):
     event_type = body["event"]["channel_type"]
     event = body["event"]
     bot_id = body['authorizations'][0]['user_id']
@@ -133,12 +133,12 @@ def handle_message_events(body, logger, say):
         send_message(say, text=response, thread_ts=event["thread_ts"])
 
 @app.event("emoji_changed")
-def handle_emoji_changed_events(body, logger, say):
+async def handle_emoji_changed_events(body, logger, say):
     print(body)
 
 
 @app.event("app_mention")
-def handle_app_mention_events(body, logger, say):
+async def handle_app_mention_events(body, logger, say):
     try:
         _handle_app_mention_events(body, logger, say)
     except Exception as e:
