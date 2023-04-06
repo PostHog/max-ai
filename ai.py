@@ -69,7 +69,7 @@ async def ai_chat_thread(thread):
         ]
     print(prompt)
 
-    completion = await openai.ChatCompletion.create(
+    completion = openai.ChatCompletion.create(
         model=OPENAI_MODEL, messages=prompt
     )
 
@@ -78,7 +78,7 @@ async def ai_chat_thread(thread):
 
 async def summarize_thread(thread):
     prompt = f"""Summarize this: {thread}"""
-    completion = await openai.ChatCompletion.create(
+    completion = openai.ChatCompletion.create(
         model=OPENAI_MODEL, messages=[{"role": "user", "content": prompt}]
     )
     return completion.choices[0].message.content

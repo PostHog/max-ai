@@ -54,7 +54,7 @@ async def classify_question(question, model=OpenAIModel.GPT_3_TURBO.value):
     {"role": "user", "content": prompt + question},
   ]
 
-  api_response = await openai.ChatCompletion.create(
+  api_response = openai.ChatCompletion.create(
     model=model,
     messages=messages
   )
