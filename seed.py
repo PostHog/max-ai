@@ -2,8 +2,8 @@ import os
 import uuid
 
 import requests
-from haystack import Document
 from dotenv import load_dotenv
+from haystack import Document
 from weaviate.util import generate_uuid5
 
 from pipeline import MaxPipeline, split_markdown_sections

@@ -8,8 +8,8 @@ from haystack import Document
 from pydantic import BaseModel
 from weaviate.util import generate_uuid5
 
-from ai import update_oncalls, ai_chat_thread
-from pipeline import split_markdown_sections, MaxPipeline
+from ai import ai_chat_thread, update_oncalls
+from pipeline import MaxPipeline, split_markdown_sections
 from slack import app as slack_app
 
 load_dotenv()  # take environment variables from .env.
@@ -88,6 +88,7 @@ def health():
 
 # Slack Bolt App
 from slack_bolt.adapter.fastapi.async_handler import AsyncSlackRequestHandler
+
 app_handler = AsyncSlackRequestHandler(slack_app)
 @app.post("/slack/events")
 async def slack_events(req: Request):

@@ -157,9 +157,9 @@ def _handle_app_mention_events(body, logger, say):
         channel=event["channel"], ts=thread_ts, limit=CHAT_HISTORY_LIMIT
     )
     if "please summarize this" in event["text"].lower():
-        await send_message(say, text="On it!", thread_ts=thread_ts, user_id=user_id, thread=thread)
+        send_message(say, text="On it!", thread_ts=thread_ts, user_id=user_id, thread=thread)
         summary = summarize_thread(thread)
-        await send_message(say, text=summary, thread_ts=thread_ts, user_id=user_id, thread=thread)
+        send_message(say, text=summary, thread_ts=thread_ts, user_id=user_id, thread=thread)
         return
     
     thread = preprocess_slack_thread(bot_id, thread)
@@ -169,12 +169,12 @@ def _handle_app_mention_events(body, logger, say):
     if use_feature_flag_prompt:
         print("using feature flag prompt for ", first_relevant_message)
         response = get_query_response(first_relevant_message, thread[1:])
-        await send_message(say, text=response, thread_ts=thread_ts, user_id=user_id, thread=thread)
+        send_message(say, text=response, thread_ts=thread_ts, user_id=user_id, thread=thread)
         return
     
-
     response = ai_chat_thread(thread)
-    await send_message(say, text=response, thread_ts=thread_ts, user_id=user_id, thread=thread)
+    send_message(say, text=response, thread_ts=thread_ts, user_id=user_id, thread=thread)
+
 
 async def send_message(say, text, thread_ts=None, user_id=None, thread=None):
     posthog.capture("max", "message generated", {"message": text, "thread_ts": thread_ts, "sender": user_id, "context": thread})

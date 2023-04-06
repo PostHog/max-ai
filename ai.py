@@ -36,7 +36,7 @@ def ai_chat_thread(thread):
     result = pipeline.retrieve_context(thread[0]["content"])
     documents = result["documents"][0].content.replace('\n', '')
 
-    SYSTEM_PROMPT = f"""
+    SYSTEM_PROMPT = """
     You are the trusty PostHog support AI named Max. You are also PostHog's Mascot!
     Please continue the conversation in a way that is helpful to the user and also makes the user feel like they are talking to a human.
     Only suggest using PostHog products or services. Do not suggest products or services from other companies.
