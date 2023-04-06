@@ -620,7 +620,7 @@ async def get_query_response(question, follow_up_messages=None, model=OpenAIMode
   if follow_up_messages:
     messages += follow_up_messages
 
-  api_response = await openai.ChatCompletion.create(
+  api_response = openai.ChatCompletion.create(
     model=model,
     messages=messages
   )
