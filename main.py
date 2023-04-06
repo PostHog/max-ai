@@ -75,7 +75,7 @@ def update_oncall():
 
 
 @app.post("/chat")
-def chat(messages: List[Message]):
+async def chat(messages: List[Message]):
     print(messages)
     msgs = [msg.dict() for msg in messages]
     response = await ai_chat_thread(msgs)
