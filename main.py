@@ -6,7 +6,6 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from haystack import Document
 from pydantic import BaseModel
-from slack_bolt.adapter.fastapi import SlackRequestHandler
 from weaviate.util import generate_uuid5
 
 from ai import update_oncalls, ai_chat_thread
@@ -35,9 +34,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Slack Bolt App
-
-app_handler = SlackRequestHandler(slack_app)
 
 class Entry(BaseModel):
     content: str
@@ -89,6 +85,10 @@ def chat(messages: List[Message]):
 def health():
     return {"status": "ok"}
 
+
+# Slack Bolt App
+from slack_bolt.adapter.fastapi.async_handler import AsyncSlackRequestHandler
+app_handler = AsyncSlackRequestHandler(slack_app)
 @app.post("/slack/events")
 async def slack_events(req: Request):
     return await app_handler.handle(req)
