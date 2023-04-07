@@ -17,6 +17,7 @@ load_dotenv()  # take environment variables from .env.
 
 origins = [
     "http://localhost",
+    "http://localhost:8000",
     "http://localhost:8001",
     "http://localhost:8002",
     "https://app.posthog.com",
