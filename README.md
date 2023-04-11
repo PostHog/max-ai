@@ -3,7 +3,7 @@
 
 MaxAI is our `trusty PostHog support AI` deployed on our Slack, app, and website.
 
-MaxAI was born in Aruba at a PostHog team offsite for a hackathon on a warm spring day in 2022.
+MaxAI was born in Aruba at a PostHog team offsite for a hackathon on a warm spring day in 2023.
 
 ## How it works
 
