@@ -73,7 +73,10 @@ async def ai_chat_thread(thread):
         model=OPENAI_MODEL, messages=prompt
     )
 
-    return completion.choices[0].message.content
+    completion = completion.choices[0].message.content
+    disclaimer = "[Disclaimer](https://github.com/PostHog/max-ai#disclaimer) :scales:"
+    response = completion + "\n" + disclaimer
+    return response
 
 
 async def summarize_thread(thread):
