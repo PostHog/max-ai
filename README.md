@@ -154,4 +154,13 @@ Thou bringeth
 **Max may display inaccurate or offensive information that doesn’t represent PostHog's views.**
 
 This is the case with LLMs in the current state. We try our best here to have a system prompt that keeps Max on topic.
-Feel free to question and chat with Max but do keep in mind that this is experimental. 
+Feel free to question and chat with Max but do keep in mind that this is experimental.
+
+A few things we've seen ourselves in testing:
+- Totally believable but totally incorrect URLs
+- Often times entertaining hallucinations about our products
+- Hallucinations about the history and founding of PostHog
+- Just plain wrong responses
+
+If you do see something concerning @metion someone from PostHog and we'll catalogue it.
+We are working on tooling to do this in an automated fashion so stay tuned!
