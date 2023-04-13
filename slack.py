@@ -6,7 +6,6 @@ from dotenv import load_dotenv
 from slack_bolt.async_app import AsyncApp
 
 from ai import ai_chat_thread, summarize_thread
-from classification import classify_question
 from inference import get_query_response
 
 CHAT_HISTORY_LIMIT = 20
@@ -180,7 +179,7 @@ async def handle_emoji_changed_events(body, logger, say):
 async def handle_app_mention_events(body, logger, say):
     try:
         await _handle_app_mention_events(body, logger, say)
-    except Exception as e:
+    except Exception:
         traceback.print_exc()
         await send_message(say, text="I'm a little over capacity right now. Please try again in a few minutes! :sleeping-hog:")
 
@@ -206,7 +205,6 @@ async def _handle_app_mention_events(body, logger, say):
     first_relevant_message = thread[0]["content"]
     # Disabling this for launch because it can be confusing and jarring when these are incorrect
     # use_feature_flag_prompt = await classify_question(first_relevant_message)
-    user_feature_flag_promt = False
     if use_feature_flag_prompt:
         print("using feature flag prompt for ", first_relevant_message)
         response = await get_query_response(first_relevant_message, thread[1:])
