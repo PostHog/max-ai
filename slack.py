@@ -166,7 +166,9 @@ async def _handle_app_mention_events(body, logger, say):
     thread = preprocess_slack_thread(bot_id, thread)
 
     first_relevant_message = thread[0]["content"]
-    use_feature_flag_prompt = await classify_question(first_relevant_message)
+    # Disabling this for launch because it can be confusing and jarring when these are incorrect
+    # use_feature_flag_prompt = await classify_question(first_relevant_message)
+    user_feature_flag_promt = False
     if use_feature_flag_prompt:
         print("using feature flag prompt for ", first_relevant_message)
         response = await get_query_response(first_relevant_message, thread[1:])
