@@ -41,7 +41,7 @@ async def update_home_tab(client, event, logger):
                         "type": "section",
                         "text": {
                             "type": "mrkdwn",
-                            "text": "*Welcome to your _App's Home_* :tada:",
+                            "text": "*Hi there! I'm Max!* :tada:",
                         },
                     },
                     {"type": "divider"},
@@ -49,17 +49,55 @@ async def update_home_tab(client, event, logger):
                         "type": "section",
                         "text": {
                             "type": "mrkdwn",
-                            "text": "This button won't do much for now but you can set up a listener for it using the `actions()` method and passing its unique `action_id`. See an example in the `examples` folder within your Bolt app.",
+                            "text": """
+                            Hello! As PostHog's trusty support AI, I'm happy to answer any questions you may have about PostHog.
+                            If you're curious about our product, features, or pricing, I'm here to help.
+                            As an open-source company, we want to provide an excellent user experience, and we're always happy to receive feedback.
+                            If you have any suggestions, please let us know. 
+                            """,
                         },
                     },
+                    {"type": "divider"},
                     {
-                        "type": "actions",
-                        "elements": [
-                            {
-                                "type": "button",
-                                "text": {"type": "plain_text", "text": "Click me!"},
-                            }
-                        ],
+                        "type": "section",
+                        "text": {
+                            "type": "mrkdwn",
+                            "text": """
+                            ## How to interact with Max
+                            It's simple. Just @ mention @max_ai in any thread and ask what you would like done. Examples may look like:
+                            - @max_ai can you try answering the question here?
+                            - @max_ai can you summarize this?
+                            - @max_ai I have a question about <something awesome>
+                            - @max_ai Who is the current support hero that I can talk to about this? 
+                            """,
+                        },
+                    },
+                    {"type": "divider"},
+                    {
+                        "type": "section",
+                        "text": {
+                            "type": "mrkdwn",
+                            "text": """
+                                    ## How does max work?! 
+                                    You can find out more about how Max is built on GitHub!
+                                    https://github.com/posthog/max-ai
+                                    
+                                    Of course it's Open Source :sleeping-hog:        
+                                    """,
+                        },
+                    },
+                    {"type": "divider"},
+                    {
+                        "type": "section",
+                        "text": {
+                            "type": "mrkdwn",
+                            "text": """
+                                    ## Disclaimer! 
+                                    *Max may display inaccurate or offensive information that doesn’t represent PostHog's views.*
+                                    This is the case with LLMs in the current state. We try our best here to have a system prompt that keeps Max on topic.
+                                    Feel free to question and chat with Max but do keep in mind that this is experimental. 
+                                    """,
+                        },
                     },
                 ],
             },
