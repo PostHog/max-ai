@@ -82,7 +82,7 @@ async def update_home_tab(client, event, logger):
                                     You can find out more about how Max is built on GitHub!
                                     https://github.com/posthog/max-ai
                                     
-                                    Of course it's Open Source :sleeping-hog:        
+                                    Of course it's Open Source :hog-excited:
                                     """,
                         },
                     },

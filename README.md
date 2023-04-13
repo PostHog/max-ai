@@ -148,3 +148,10 @@ The secret sauce to make my metrics shine.
 Though you may seem but a lowly label,
 Thou bringeth
 ```
+
+## Disclaimer! 
+
+**Max may display inaccurate or offensive information that doesn’t represent PostHog's views.**
+
+This is the case with LLMs in the current state. We try our best here to have a system prompt that keeps Max on topic.
+Feel free to question and chat with Max but do keep in mind that this is experimental. 
