@@ -1,6 +1,7 @@
 import os
 from typing import List
 
+import sentry_sdk
 from dotenv import load_dotenv
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -14,6 +15,14 @@ from slack import app as slack_app
 
 load_dotenv()  # take environment variables from .env.
 
+sentry_sdk.init(
+    dsn="https://4a3780ef52824c52b13eeab44ea73a14@o1015702.ingest.sentry.io/4505009495605248",
+
+    # Set traces_sample_rate to 1.0 to capture 100%
+    # of transactions for performance monitoring.
+    # We recommend adjusting this value in production,
+    traces_sample_rate=1.0,
+)
 
 origins = [
     "http://localhost",
