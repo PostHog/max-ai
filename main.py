@@ -108,7 +108,7 @@ async def slack_events(req: Request):
 @app.get("/slack/oauth_redirect")
 async def oauth_redirect(req: Request):
     logging.info('Installation completed.')
-    return app_handler.handle(req)
+    return await app_handler.handle(req)
 
 @app.get("/slack/install")
 async def install(req: Request):
