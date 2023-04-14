@@ -67,6 +67,7 @@ async def ai_chat_thread(thread):
                 {"role": "user", "content": CONTEXT_PROMPT + first_message["content"]},
                 *follow_up_thread,
         ]
+
     print(prompt)
 
     completion = openai.ChatCompletion.create(

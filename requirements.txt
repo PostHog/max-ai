@@ -29,9 +29,7 @@ azure-core==1.26.3
     #   azure-ai-formrecognizer
     #   msrest
 backoff==2.2.1
-    # via
-    #   posthog
-    #   posthoganalytics
+    # via posthog
 boilerpy3==1.0.6
     # via farm-haystack
 canals==0.0.1
@@ -119,7 +117,17 @@ idna==3.4
     #   requests
     #   yarl
 importlib-metadata==6.1.0
-    # via mlflow
+    # via
+    #   alembic
+    #   flask
+    #   markdown
+    #   mlflow
+    #   numba
+importlib-resources==5.12.0
+    # via
+    #   alembic
+    #   jsonschema
+    #   matplotlib
 inflect==6.0.2
     # via quantulum3
 isodate==0.6.1
@@ -163,9 +171,7 @@ mlflow==2.2.2
 mmh3==3.1.0
     # via farm-haystack
 monotonic==1.6
-    # via
-    #   posthog
-    #   posthoganalytics
+    # via posthog
 more-itertools==9.1.0
     # via farm-haystack
 mpmath==1.3.0
@@ -230,12 +236,12 @@ pillow==9.5.0
     # via
     #   matplotlib
     #   torchvision
-posthog==2.4.2
+pkgutil-resolve-name==1.3.10
+    # via jsonschema
+posthog==2.5.0
     # via
     #   -r requirements.in
     #   farm-haystack
-posthoganalytics==2.4.2
-    # via -r requirements.in
 protobuf==3.20.2
     # via
     #   farm-haystack
@@ -260,7 +266,6 @@ python-dateutil==2.8.2
     #   matplotlib
     #   pandas
     #   posthog
-    #   posthoganalytics
 python-docx==0.8.11
     # via farm-haystack
 python-dotenv==1.0.0
@@ -300,7 +305,6 @@ requests==2.28.2
     #   openai
     #   pdpyras
     #   posthog
-    #   posthoganalytics
     #   requests-oauthlib
     #   tika
     #   tiktoken
@@ -340,7 +344,6 @@ six==1.16.0
     #   isodate
     #   langdetect
     #   posthog
-    #   posthoganalytics
     #   python-dateutil
     #   querystring-parser
 slack-bolt==1.17.0
@@ -408,6 +411,7 @@ typing-extensions==4.5.0
     #   huggingface-hub
     #   pydantic
     #   sqlalchemy
+    #   starlette
     #   torch
 tzdata==2023.3
     # via pandas
@@ -431,7 +435,9 @@ werkzeug==2.2.3
 yarl==1.8.2
     # via aiohttp
 zipp==3.15.0
-    # via importlib-metadata
+    # via
+    #   importlib-metadata
+    #   importlib-resources
 
 # The following packages are considered to be unsafe in a requirements file:
 # setuptools
