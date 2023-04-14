@@ -3,6 +3,9 @@ import traceback
 
 from dotenv import load_dotenv
 from slack_bolt.async_app import AsyncApp
+from slack_bolt.oauth.oauth_settings import OAuthSettings
+from slack_sdk.oauth.installation_store import FileInstallationStore
+from slack_sdk.oauth.state_store import FileOAuthStateStore
 
 from ai import ai_chat_thread, summarize_thread
 from inference import get_query_response
@@ -14,9 +17,17 @@ load_dotenv()
 
 posthog = Posthog(os.environ.get("POSTHOG_API_KEY"), os.environ.get("POSTHOG_HOST"))
 
+oauth_settings = OAuthSettings(
+    client_id=os.environ["SLACK_CLIENT_ID"],
+    client_secret=os.environ["SLACK_CLIENT_SECRET"],
+    scopes=["channels:read", "groups:read", "chat:write"],
+    installation_store=FileInstallationStore(base_dir="./data/installations"),
+    state_store=FileOAuthStateStore(expiration_seconds=600, base_dir="./data/states")
+)
+
 # Initializes your app with your bot token and signing secret
 app = AsyncApp(
-    token=os.environ.get("SLACK_BOT_TOKEN"),
+    oauth_settings=oauth_settings,
     signing_secret=os.environ.get("SLACK_SIGNING_SECRET"),
 )
 
