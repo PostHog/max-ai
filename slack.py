@@ -62,14 +62,14 @@ It's simple. Just @ mention @max_ai in any thread and ask what you would like do
   - @max_ai I have a question about <something awesome>
   - @max_ai Who is the current support hero that I can talk to about this? 
 
-## How does max work?! 
+# How does max work?! 
 
 You can find out more about how Max is built on GitHub!
 https://github.com/posthog/max-ai
 
 Of course it's Open Source :hog-excited:
 
-## Disclaimer! 
+# Disclaimer! 
 
 *Max may display inaccurate or offensive information that doesn’t represent PostHog's views.*
 This is the case with LLMs in the current state. We try our best here to have a system prompt that keeps Max on topic.
