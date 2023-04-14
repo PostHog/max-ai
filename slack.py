@@ -1,20 +1,19 @@
 import os
 import traceback
 
-import posthoganalytics as posthog
 from dotenv import load_dotenv
 from slack_bolt.async_app import AsyncApp
 
 from ai import ai_chat_thread, summarize_thread
 from classification import classify_question
 from inference import get_query_response
+from posthog.client import Client as PostHog
 
 CHAT_HISTORY_LIMIT = 20
 
 load_dotenv()
 
-posthog.project_api_key = os.environ.get("POSTHOG_API_KEY")
-posthog.host = os.environ.get("POSTHOG_HOST")
+posthog = PostHog(os.environ.get("POSTHOG_API_KEY"), os.environ.get("POSTHOG_HOST"))
 
 # Initializes your app with your bot token and signing secret
 app = AsyncApp(
