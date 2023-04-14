@@ -74,7 +74,7 @@ async def ai_chat_thread(thread):
     )
 
     completion = completion.choices[0].message.content
-    disclaimer = "*<https://github.com/PostHog/max-ai#disclaimer|Disclaimer>* :scales:"
+    disclaimer = "<https://github.com/PostHog/max-ai#disclaimer|Disclaimer> :love-hog:"
     response = completion + "\n\n" + disclaimer
     return response
 
