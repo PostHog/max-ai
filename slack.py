@@ -124,6 +124,7 @@ async def handle_message_events(body, logger, say):
     event = body["event"]
     bot_id = body['authorizations'][0]['user_id']
     print(body) 
+
     if event_type == "im":
         thread = await app.client.conversations_history(channel=event["channel"], limit=CHAT_HISTORY_LIMIT)
         thread = preprocess_slack_thread(bot_id, thread)
@@ -181,11 +182,33 @@ async def handle_app_mention_events(body, logger, say):
         await _handle_app_mention_events(body, logger, say)
     except Exception as e:
         traceback.print_exc()
+
         await send_message(say, text="I'm a little over capacity right now. Please try again in a few minutes! :sleeping-hog:")
+
+        posthog.capture(
+            "max-ai",
+            "max-ai mention error",
+            properties={
+                "error": str(e),
+                "user": body["event"]["user"],
+                "channel": body["event"]["channel"],
+                "text": body["event"]["text"],
+            },
+        )
 
 async def _handle_app_mention_events(body, logger, say):
     logger.info(body)
     print(body)
+
+    posthog.capture(
+        "max-ai",
+        "max-ai mention",
+        properties={
+            "user": body["event"]["user"],
+            "channel": body["event"]["channel"],
+            "text": body["event"]["text"],
+        },
+    )
 
     user_id = get_user_id(body)
     bot_id = body['authorizations'][0]['user_id']
@@ -202,22 +225,21 @@ async def _handle_app_mention_events(body, logger, say):
     
     thread = preprocess_slack_thread(bot_id, thread)
 
-    first_relevant_message = thread[0]["content"]
+    # first_relevant_message = thread[0]["content"]
     # Disabling this for launch because it can be confusing and jarring when these are incorrect
     # use_feature_flag_prompt = await classify_question(first_relevant_message)
-    user_feature_flag_promt = False
-    if use_feature_flag_prompt:
-        print("using feature flag prompt for ", first_relevant_message)
-        response = await get_query_response(first_relevant_message, thread[1:])
-        await send_message(say, text=response, thread_ts=thread_ts, user_id=user_id, thread=thread)
-        return
+    # if use_feature_flag_prompt:
+    #     print("using feature flag prompt for ", first_relevant_message)
+    #     response = await get_query_response(first_relevant_message, thread[1:])
+    #     await send_message(say, text=response, thread_ts=thread_ts, user_id=user_id, thread=thread)
+    #     return
     
     response = await ai_chat_thread(thread)
     await send_message(say, text=response, thread_ts=thread_ts, user_id=user_id, thread=thread)
 
-
 async def send_message(say, text, thread_ts=None, user_id=None, thread=None):
-    posthog.capture("max", "message generated", {"message": text, "thread_ts": thread_ts, "sender": user_id, "context": thread})
+    posthog.capture("max-ai", "max-ai message sent", {"message": text, "thread_ts": thread_ts, "sender": user_id, "context": thread})
+
     if thread_ts:
         await say(text=text, thread_ts=thread_ts)
     else:
