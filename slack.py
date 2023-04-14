@@ -7,13 +7,13 @@ from slack_bolt.async_app import AsyncApp
 from ai import ai_chat_thread, summarize_thread
 from classification import classify_question
 from inference import get_query_response
-from posthog.client import Client as PostHog
+from posthog import Posthog
 
 CHAT_HISTORY_LIMIT = 20
 
 load_dotenv()
 
-posthog = PostHog(os.environ.get("POSTHOG_API_KEY"), os.environ.get("POSTHOG_HOST"))
+posthog = Posthog(os.environ.get("POSTHOG_API_KEY"), os.environ.get("POSTHOG_HOST"))
 
 # Initializes your app with your bot token and signing secret
 app = AsyncApp(
@@ -67,7 +67,7 @@ async def update_home_tab(client, event, logger):
                             - @max_ai can you try answering the question here?
                             - @max_ai can you summarize this?
                             - @max_ai I have a question about <something awesome>
-                            - @max_ai Who is the current support hero that I can talk to about this? 
+                            - @max_ai Who is the current support hero that I can talk to about this?
                             """,
                         },
                     },
@@ -77,10 +77,10 @@ async def update_home_tab(client, event, logger):
                         "text": {
                             "type": "mrkdwn",
                             "text": """
-                                    ## How does max work?! 
+                                    ## How does max work?!
                                     You can find out more about how Max is built on GitHub!
                                     https://github.com/posthog/max-ai
-                                    
+
                                     Of course it's Open Source :hog-excited:
                                     """,
                         },
@@ -91,10 +91,10 @@ async def update_home_tab(client, event, logger):
                         "text": {
                             "type": "mrkdwn",
                             "text": """
-                                    ## Disclaimer! 
+                                    ## Disclaimer!
                                     *Max may display inaccurate or offensive information that doesn’t represent PostHog's views.*
                                     This is the case with LLMs in the current state. We try our best here to have a system prompt that keeps Max on topic.
-                                    Feel free to question and chat with Max but do keep in mind that this is experimental. 
+                                    Feel free to question and chat with Max but do keep in mind that this is experimental.
                                     """,
                         },
                     },

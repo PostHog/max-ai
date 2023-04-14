@@ -235,7 +235,7 @@ pillow==9.5.0
     #   torchvision
 pkgutil-resolve-name==1.3.10
     # via jsonschema
-posthog==2.4.2
+posthog==2.5.0
     # via
     #   -r requirements.in
     #   farm-haystack
