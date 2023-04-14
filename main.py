@@ -1,3 +1,4 @@
+import logging
 import os
 from typing import List
 
@@ -104,3 +105,11 @@ app_handler = AsyncSlackRequestHandler(slack_app)
 async def slack_events(req: Request):
     return await app_handler.handle(req)
 
+@app.get("/slack/oauth_redirect")
+async def oauth_redirect(req: Request):
+    await app_handler.handle(req)
+    return logging.info('Installation completed.')
+
+@app.get("/slack/install")
+async def install(req: Request):
+    return await app_handler.handle(req)
