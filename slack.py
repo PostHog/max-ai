@@ -48,33 +48,7 @@ async def update_home_tab(client, event, logger):
                         "type": "section",
                         "text": {
                             "type": "mrkdwn",
-                            "text": """
-Hello! As PostHog's trusty support AI, I'm happy to answer any questions you may have about PostHog.
-If you're curious about our product, features, or pricing, I'm here to help.
-As an open-source company, we want to provide an excellent user experience, and we're always happy to receive feedback.
-If you have any suggestions, please let us know. 
-
-*How to interact with Max*
-
-It's simple. Just @ mention @max_ai in any thread and ask what you would like done. Examples may look like:
-- @max_ai can you try answering the question here?
-- @max_ai can you summarize this?
-- @max_ai I have a question about <something awesome>
-- @max_ai Who is the current support hero that I can talk to about this? 
-
-*How does max work?!*
-
-You can find out more about how Max is built on GitHub!
-https://github.com/posthog/max-ai
-
-Of course it's Open Source :hog-excited:
-
-*Disclaimer!*
-
-_Max may display inaccurate or offensive information that doesn’t represent PostHog's views._
-This is the case with LLMs in the current state. We try our best here to have a system prompt that keeps Max on topic.
-Feel free to question and chat with Max but do keep in mind that this is experimental. 
-""",
+                            "text": "Hello! As PostHog's trusty support AI, I'm happy to answer any questions you may have about PostHog. If you're curious about our product, features, or pricing, I'm here to help. As an open-source company, we want to provide an excellent user experience, and we're always happy to receive feedback. If you have any suggestions, please let us know.\n\n *How to interact with Max* \n It's simple. Just @ mention @max_ai in any thread and ask what you would like done. Examples may look like:\n- @max_ai can you try answering the question here?\n- @max_ai can you summarize this?\n- @max_ai I have a question about <something awesome>\n- @max_ai Who is the current support hero that I can talk to about this? \n\n *How does max work?!*\nYou can find out more about how Max is built on GitHub!\nhttps://github.com/posthog/max-ai\nOf course it's Open Source :hog-excited:\n\n*Disclaimer!*\n_Max may display inaccurate or offensive information that doesn’t represent PostHog's views._\nThis is the case with LLMs in the current state. We try our best here to have a system prompt that keeps Max on topic.\nFeel free to question and chat with Max but do keep in mind that this is experimental.",
                         },
                     },
                 ],
