@@ -114,14 +114,14 @@ async def handle_summarize_slash_command(ack, say, command):
 
 
 @app.event("message")
-async def handle_message_events(body, logger, say):
+async def handle_message_events(client, body, logger, say):
     event_type = body["event"]["channel_type"]
     event = body["event"]
     bot_id = body['authorizations'][0]['user_id']
     print(body) 
 
     if event_type == "im":
-        thread = await app.client.conversations_history(channel=event["channel"], limit=CHAT_HISTORY_LIMIT)
+        thread = await client.conversations_history(channel=event["channel"], limit=CHAT_HISTORY_LIMIT)
         thread = preprocess_slack_thread(bot_id, thread)
         response = await ai_chat_thread(thread)
         await send_message(say, response)
@@ -139,7 +139,7 @@ async def handle_message_events(body, logger, say):
         thread_ts = event["thread_ts"]
         # Call the conversations.replies method with the channel ID and thread timestamp
         # try:
-        result = await app.client.conversations_replies(channel=event["channel"], ts=thread_ts)
+        result = await client.conversations_replies(channel=event["channel"], ts=thread_ts)
         result["messages"]
 
         thread = preprocess_slack_thread(bot_id, result)
@@ -172,12 +172,9 @@ async def handle_emoji_changed_events(body, logger, say):
 
 
 @app.event("app_mention")
-async def handle_app_mention_events(body, logger, say, **kwargs):
-    print("~~~~~")
-    print(kwargs)
-    print("~~~~~")
+async def handle_app_mention_events(client, body, logger, say):
     try:
-        await _handle_app_mention_events(body, logger, say)
+        await _handle_app_mention_events(client, body, logger, say)
     except Exception as e:
         traceback.print_exc()
 
@@ -195,7 +192,7 @@ async def handle_app_mention_events(body, logger, say, **kwargs):
         )
         raise e
 
-async def _handle_app_mention_events(body, logger, say):
+async def _handle_app_mention_events(client, body, logger, say):
     logger.info(body)
     print(body)
 
@@ -213,7 +210,7 @@ async def _handle_app_mention_events(body, logger, say):
     bot_id = body['authorizations'][0]['user_id']
     event = body["event"]
     thread_ts = event["thread_ts"] if "thread_ts" in event else event["ts"]
-    thread = await app.client.conversations_replies(
+    thread = await client.conversations_replies(
         channel=event["channel"], ts=thread_ts, limit=CHAT_HISTORY_LIMIT
     )
     if "please summarize this" in event["text"].lower():
