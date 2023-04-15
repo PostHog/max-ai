@@ -3,7 +3,7 @@ import traceback
 
 from dotenv import load_dotenv
 from slack_bolt.async_app import AsyncApp
-from slack_bolt.oauth.oauth_settings import OAuthSettings
+from slack_bolt.oauth.async_oauth_settings import AsyncOAuthSettings
 from slack_sdk.oauth.installation_store import FileInstallationStore
 from slack_sdk.oauth.state_store import FileOAuthStateStore
 
@@ -17,7 +17,7 @@ load_dotenv()
 
 posthog = Posthog(os.environ.get("POSTHOG_API_KEY"), os.environ.get("POSTHOG_HOST"))
 
-oauth_settings = OAuthSettings(
+oauth_settings = AsyncOAuthSettings(
     client_id=os.environ["SLACK_CLIENT_ID"],
     client_secret=os.environ["SLACK_CLIENT_SECRET"],
     scopes=["channels:read", "groups:read", "chat:write"],
