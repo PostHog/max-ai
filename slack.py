@@ -172,7 +172,10 @@ async def handle_emoji_changed_events(body, logger, say):
 
 
 @app.event("app_mention")
-async def handle_app_mention_events(body, logger, say):
+async def handle_app_mention_events(body, logger, say, **kwargs):
+    print("~~~~~")
+    print(kwargs)
+    print("~~~~~")
     try:
         await _handle_app_mention_events(body, logger, say)
     except Exception as e:
