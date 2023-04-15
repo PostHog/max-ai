@@ -6,6 +6,10 @@ kill_timeout = 5
 primary_region = "sjc"
 processes = []
 
+[mounts]
+source="slack_data"
+destination="/app/data"
+
 [env]
 
 [experimental]
