@@ -190,6 +190,7 @@ async def handle_app_mention_events(body, logger, say):
                 "text": body["event"]["text"],
             },
         )
+        raise e
 
 async def _handle_app_mention_events(body, logger, say):
     logger.info(body)
