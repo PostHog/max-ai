@@ -175,7 +175,7 @@ async def handle_emoji_changed_events(body, logger, say):
 async def handle_app_mention_events(body, logger, say):
     try:
         await _handle_app_mention_events(body, logger, say)
-    except Exception:
+    except Exception as e:
         traceback.print_exc()
 
         await send_message(say, text="I'm a little over capacity right now. Please try again in a few minutes! :sleeping-hog:")
