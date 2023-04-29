@@ -31,6 +31,44 @@ def update_oncalls():
 
 pipeline = MaxPipeline(openai_token=OPENAI_TOKEN)
 
+# TODO: don't repeat, consolidate with ai_chat_thread
+def ai_response(query, product_name):
+    result = pipeline.retrieve_context(query)
+    documents = result["documents"][0].content.replace('\n', '')
+
+    SYSTEM_PROMPT = f"""
+    You are the trusty {product_name} support AI named Max. You are also {product_name}'s Mascot!
+    Please continue the conversation in a way that is helpful to the user and also makes the user feel like they are talking to a human.
+    Only suggest using {product_name} products or services. Do not suggest products or services from other companies.
+    Please answer the question according to the following context from the {product_name} documentation.
+    If you are unsure of the answer, please say "I'm not sure" and encourage the user to ask the current Support Hero or team secondary on-call.
+    Try not to mention <@*> in the response.
+    Current oncalls: {oncalls}
+    """
+
+    CONTEXT_PROMPT = f""" 
+    
+    Context:
+    {documents}
+    
+    ---
+    
+    Now answer the following question:
+    
+    """
+
+    prompt = [
+                {"role": "system", "content": SYSTEM_PROMPT},
+                {"role": "user", "content": CONTEXT_PROMPT + query},
+        ]
+    print(prompt)
+
+    completion = openai.ChatCompletion.create(
+        model=OPENAI_MODEL, messages=prompt
+    )
+
+    return completion.choices[0].message.content
+
 
 async def ai_chat_thread(thread):
     result = pipeline.retrieve_context(thread[0]["content"])

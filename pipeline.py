@@ -5,7 +5,7 @@ from typing import List
 from dotenv import load_dotenv
 from haystack import Document
 from haystack.document_stores.weaviate import WeaviateDocumentStore
-from haystack.nodes import EmbeddingRetriever, Shaper
+from haystack.nodes import EmbeddingRetriever, Shaper, Crawler, PreProcessor
 from haystack.pipelines import Pipeline
 
 load_dotenv()
@@ -113,6 +113,30 @@ class MaxPipeline:
         result = pipeline.run(query=query, params={"Retriever": {"top_k": 10, "index": "ContextDocument"}}, debug=True)
 
         return result
+    
+    def embed_from_url(self, urls: List[str]):
+        # UNTESTED atm
+        pipeline = Pipeline()
+
+        crawler = Crawler(
+          urls=urls,
+          crawler_depth=1,
+        )
+        preprocessor = PreProcessor(
+            clean_empty_lines=True,
+            clean_whitespace=True,
+            clean_header_footer=False,
+            split_by="passage",
+            split_length=500,
+            split_respect_sentence_boundary=False,
+        )
+
+        pipeline.add_node(component=crawler, name="crawler", inputs=['File'])
+        pipeline.add_node(preprocessor, name="preprocessor", inputs=["crawler"])
+        pipeline.add_node(component=self.document_store, name="document_store", inputs=['preprocessor'])
+
+        pipeline.run(params={"document_store": {"index": "ContextDocument"}})
+
 
 def split_markdown_sections(markdown_content):
     header_pattern = re.compile(r"(^#+\s+.*$)", re.MULTILINE)
