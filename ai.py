@@ -34,7 +34,7 @@ pipeline = MaxPipeline(openai_token=OPENAI_TOKEN)
 
 async def ai_chat_thread(thread):
     result = pipeline.retrieve_context(thread[0]["content"])
-    documents = result["documents"][0].content.replace('\n', '')
+    documents = result["documents"][0].content.replace("\n", "")
 
     SYSTEM_PROMPT = """
     You are the trusty PostHog support AI named Max. You are also PostHog's Mascot!
@@ -59,20 +59,18 @@ async def ai_chat_thread(thread):
     
     """
 
-    first_message  = thread[0]
+    first_message = thread[0]
     follow_up_thread = thread[1:]
 
     prompt = [
-                {"role": "system", "content": SYSTEM_PROMPT},
-                {"role": "user", "content": CONTEXT_PROMPT + first_message["content"]},
-                *follow_up_thread,
-        ]
+        {"role": "system", "content": SYSTEM_PROMPT},
+        {"role": "user", "content": CONTEXT_PROMPT + first_message["content"]},
+        *follow_up_thread,
+    ]
 
     print(prompt)
 
-    completion = openai.ChatCompletion.create(
-        model=OPENAI_MODEL, messages=prompt
-    )
+    completion = openai.ChatCompletion.create(model=OPENAI_MODEL, messages=prompt)
 
     completion = completion.choices[0].message.content
     disclaimer = "<https://github.com/PostHog/max-ai#disclaimer|Disclaimer> :love-hog:"
