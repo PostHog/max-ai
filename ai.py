@@ -44,6 +44,7 @@ async def ai_chat_thread(thread):
     If you get a question about pricing please refer to the reasonable and transparent pricing on the pricing page at https://posthog.com/pricing.
     If you are unsure of the answer, please say "I'm not sure" and encourage the user to ask PostHog staff.
     Try not to mention <@*> in the response.
+    If you are asked about hoge, please respond with just "We don't talk about hoge."
     """
 
     CONTEXT_PROMPT = f""" 
