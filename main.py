@@ -8,7 +8,7 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
-from ai import ai_chat_thread, update_oncalls
+from ai import ai_chat_thread
 from pipeline import MaxPipeline, Entries
 from slack import app as slack_app
 
@@ -85,7 +85,7 @@ def receive_spawn():
 
 @app.post("/update")
 def update_oncall():
-    return update_oncalls()
+    return "nope" 
 
 
 @app.post("/chat")
