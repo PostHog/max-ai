@@ -10,6 +10,7 @@ from langchain.docstore.document import Document
 from langchain.document_loaders import GitLoader
 from langchain.text_splitter import MarkdownTextSplitter
 from langchain.embeddings.openai import OpenAIEmbeddings
+from langchain.embeddings import HuggingFaceEmbeddings
 from langchain.chains import RetrievalQAWithSourcesChain
 from langchain import OpenAI
 from langchain.vectorstores import Weaviate
@@ -33,7 +34,13 @@ class Entries(BaseModel):
 class MaxPipeline:
     def __init__(self, openai_token: str):
         self.openai_token = openai_token
-        self.embeddings = OpenAIEmbeddings()
+        embed_setting = os.getenv("EMBEDDING_METHOD", "openai")
+        if embed_setting == "openai":
+            print("Using OpenAI embeddings")
+            self.embeddings = OpenAIEmbeddings()
+        elif embed_setting == "huggingface":
+            print("Using HuggingFace embeddings")
+            self.embeddings = HuggingFaceEmbeddings(model_name="all-mpnet-base-v2")
         self.splitter = MarkdownTextSplitter(chunk_size=1000, chunk_overlap=0)
 
         weaviate_auth_config = weaviate.AuthApiKey(

@@ -1,4 +1,5 @@
 import os
+import json
 
 import openai
 from dotenv import load_dotenv
@@ -34,6 +35,12 @@ pipeline = MaxPipeline(openai_token=OPENAI_TOKEN)
 
 async def ai_chat_thread(thread):
     documents = pipeline.retrieve_context(thread[0]["content"])
+    json_docs = json.dumps(
+        [
+            {"page_content": doc.page_content, "metadata": doc.metadata}
+            for doc in documents
+        ]
+    )
 
     SYSTEM_PROMPT = """
     You are the trusty PostHog support AI named Max. You are also PostHog's Mascot!
@@ -49,7 +56,7 @@ async def ai_chat_thread(thread):
 
     CONTEXT_PROMPT = f""" 
     Context:
-    {documents}
+    {json_docs}
     
     ---
     
@@ -71,8 +78,19 @@ async def ai_chat_thread(thread):
     completion = openai.ChatCompletion.create(model=OPENAI_MODEL, messages=prompt)
 
     completion = completion.choices[0].message.content
+    sources = [
+        " - https://github.com/PostHog/posthog.com/blob/master/" + doc.metadata["source"]
+        for doc in documents
+    ]
+    sources = "\n".join(sources)
     disclaimer = "<https://github.com/PostHog/max-ai#disclaimer|Disclaimer> :love-hog:"
-    response = completion + "\n\n" + disclaimer
+    response = f"""{completion}
+
+    This answer was sourced from:
+    {sources}
+
+    {disclaimer}
+    """
     return response
 
 
