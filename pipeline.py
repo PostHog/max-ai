@@ -1,133 +1,110 @@
 import os
 import re
 from typing import List
+from pprint import pprint
 
+import weaviate
 from dotenv import load_dotenv
-from haystack import Document
-from haystack.document_stores.weaviate import WeaviateDocumentStore
-from haystack.nodes import EmbeddingRetriever, Shaper
-from haystack.pipelines import Pipeline
+from git import Repo
+from langchain.docstore.document import Document
+from langchain.document_loaders import GitLoader
+from langchain.text_splitter import MarkdownTextSplitter
+from langchain.embeddings.openai import OpenAIEmbeddings
+from langchain.chains import RetrievalQAWithSourcesChain
+from langchain import OpenAI
+from langchain.vectorstores import Weaviate
+from pydantic import BaseModel
+
 
 load_dotenv()
+
+EXAMPLE_DATA_DIR = os.path.join(os.path.dirname(__file__), "example_data")
+
+
+class Entry(BaseModel):
+    content: str
+    meta: dict
+
+
+class Entries(BaseModel):
+    entries: List[Entry]
+
 
 class MaxPipeline:
     def __init__(self, openai_token: str):
         self.openai_token = openai_token
+        self.embeddings = OpenAIEmbeddings()
+        self.splitter = MarkdownTextSplitter(chunk_size=1000, chunk_overlap=0)
 
-        self.document_store = WeaviateDocumentStore(
-            host=os.getenv("WEAVIATE_HOST", "http://localhost"),
-            port=os.getenv("WEAVIATE_PORT", 8080),
-            embedding_dim=1024,
-            custom_schema={
-              "classes": [
-                {
-                  "class": "Document",
-                  "description": "The first of its kind",
-                  "vectorizer": "text2vec-openai",
-                  "moduleConfig": {
-                    "text2vec-openai": {
-                      "model": "ada",
-                      "modelVersion": "002",
-                      "type": "text"
-                    }
-                  },
-                  "properties": [
-                    {
-                      "dataType": [
-                        "text"
-                      ],
-                      "description": "The second of its kind",
-                      "moduleConfig": {
-                        "text2vec-openai": {
-                          "skip": False,
-                          "vectorizePropertyName": False
-                        }
-                      },
-                      "name": "content"
-                    }
-                  ]
-                },
-                {
-                  "class": "ContextDocument",
-                  "vectorizer": "text2vec-openai",
-                  "moduleConfig": {
-                    "text2vec-openai": {
-                      "model": "ada",
-                      "modelVersion": "002",
-                      "type": "text"
-                    }
-                  },
-                  "properties": [
-                    {
-                      "dataType": [
-                        "text"
-                      ],
-                      "moduleConfig": {
-                        "text2vec-openai": {
-                          "skip": False,
-                          "vectorizePropertyName": False
-                        }
-                      },
-                      "name": "content"
-                    }
-                  ]
-                },
-
-              ]
-            },
-            additional_headers={"X-OpenAI-Api-Key": self.openai_token},
+        weaviate_auth_config = weaviate.AuthApiKey(
+            api_key=os.getenv("WEAVIATE_API_KEY")
         )
 
-        self.retriever = EmbeddingRetriever(
-            document_store=self.document_store,
-            batch_size=16,
-            embedding_model="ada",
-            api_key=self.openai_token,
-            max_seq_len=768,
+        weaviate_client = weaviate.Client(
+            url=os.getenv("WEAVIATE_URL"), auth_client_secret=weaviate_auth_config
         )
+
+        self.document_store = Weaviate(
+            client=weaviate_client,
+            index_name="Posthog_docs",
+            by_text=False,
+            text_key="page_content",
+            embedding=self.embeddings,
+            attributes=["source"],
+        )
+
+        self.retriever = self.document_store.as_retriever(search_type="mmr")
+
+    def embed_markdown_document(self, documents: Entries):
+        for entry in documents.entries:
+            texts = self.splitter.split_text(entry.content)
+
+            documents = [
+                Document(page_content=doc, metadata=entry.meta) for doc in texts if doc
+            ]
+            self.embed_documents(documents)
 
     def embed_documents(self, documents: List[Document]):
-        self.document_store.write_documents(documents, index="ContextDocument")
-
-    def update_embeddings(self):
-        self.document_store.update_embeddings(self.retriever, index="ContextDocument")
-
-        # TODO: only update embeddings for docs we just inserted
-        # self.document_store.update_embeddings(self.retriever, index="ContextDocument", filters={
-        #     "id": {"$in": [doc.id for doc in documents]}
-        # })
+        self.document_store.add_documents(documents)
 
     def retrieve_context(self, query: str):
-        pipeline = Pipeline()
-
-        # TODO: Try using pipelines to retrieve the answer as well instead of the OpenAi SDK
-        # prompt_model = PromptModel("gpt-3.5-turbo", api_key=os.getenv("OPENAI_TOKEN"))
-        # prompt_template = PromptTemplate("PROMPT {query}")
-        # prompt_node = PromptNode(prompt_model, template)
-
-        shaper = Shaper(func="join_documents", inputs={"documents": "documents"}, outputs=["documents"])
-
-        pipeline.add_node(self.retriever, name="Retriever", inputs=["Query"])
-        pipeline.add_node(shaper, name="Shaper", inputs=["Retriever"])
-
-        result = pipeline.run(query=query, params={"Retriever": {"top_k": 10, "index": "ContextDocument"}}, debug=True)
-
+        result = self.retriever.get_relevant_documents(query)
         return result
 
-def split_markdown_sections(markdown_content):
-    header_pattern = re.compile(r"(^#+\s+.*$)", re.MULTILINE)
-    sections = []
+    def chat(self, query: str):
+        chain = RetrievalQAWithSourcesChain.from_chain_type(
+            OpenAI(temperature=0), chain_type="stuff", retriever=self.retriever
+        )
+        results = chain(
+            {"question": query},
+            return_only_outputs=True,
+        )
+        return results
 
-    matches = list(header_pattern.finditer(markdown_content))
-    if not matches:
-        return [markdown_content]
+    def embed_git_repo(self):
+        if not os.path.exists(EXAMPLE_DATA_DIR):
+            print("Repo not found, cloning...")
+            repo = Repo.clone_from(
+                "https://github.com/posthog/posthog.com",
+                to_path=EXAMPLE_DATA_DIR,
+            )
+        else:
+            print("Repo already exists, pulling latest changes...")
+            repo = Repo(EXAMPLE_DATA_DIR)
+            repo.git.pull()
 
-    for i, match in enumerate(matches[:-1]):
-        section_start = match.start()
-        section_end = matches[i + 1].start()
-        sections.append(markdown_content[section_start:section_end].strip())
-
-    sections.append(markdown_content[matches[-1].start():].strip())
-
-    return sections
-
+        branch = repo.head.reference
+        loader = GitLoader(
+            repo_path=EXAMPLE_DATA_DIR,
+            branch=branch,
+            file_filter=lambda file_path: file_path.endswith(".md"),
+        )
+        data = loader.load()
+        for page in data:
+            docs = []
+            text = self.splitter.split_text(page.page_content)
+            metadata = page.metadata
+            print(f"Adding {page.metadata['source']}")
+            for token in text:
+                docs.append(Document(page_content=token, metadata=metadata))
+            self.document_store.add_documents(docs)
