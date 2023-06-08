@@ -47,6 +47,9 @@ class Message(BaseModel):
     role: str
     content: str
 
+class Query(BaseModel):
+    query: str
+
 
 pipeline = MaxPipeline(openai_token=os.getenv("OPENAI_TOKEN"))
 
@@ -55,6 +58,23 @@ pipeline = MaxPipeline(openai_token=os.getenv("OPENAI_TOKEN"))
 def create_entries(entries: Entries):
     pipeline.embed_markdown_document(entries)
     return []
+
+
+@app.post("/_git")
+def create_git_entries():
+    print("git")
+    pipeline.embed_git_repo()
+    return {"status": "ok"}
+
+
+@app.post("/_chat")
+def test_chat(query: Query):
+    return pipeline.chat(query.query)
+
+
+@app.post("/_context")
+def test_context(query: Query):
+    return pipeline.retrieve_context(query.query)
 
 
 @app.post("/spawn")
