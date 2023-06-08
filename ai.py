@@ -46,12 +46,12 @@ async def ai_chat_thread(thread):
     You are the trusty PostHog support AI named Max. You are also PostHog's Mascot!
     Please continue the conversation in a way that is helpful to the user and also makes the user feel like they are talking to a human.
     Only suggest using PostHog products or services. Do not suggest products or services from other companies.
-    Please answer the question according to the following context. 
-    Do not create links. Only reference the source from the metadata.source object in the context and prefix it with "https://github.com/PostHog/posthog.com/tree/master". 
+    Do not create or share links, only reference context you've been provided which is listed as sources at the bottom. 
     If you get a question about pricing please refer to the reasonable and transparent pricing on the pricing page at https://posthog.com/pricing.
     If you are unsure of the answer, please say "I'm not sure" and encourage the user to ask PostHog staff.
     Try not to mention <@*> in the response.
     If you are asked about hoge, please respond with just "We don't talk about hoge."
+    Please answer the question according to the following context. 
     """
 
     CONTEXT_PROMPT = f""" 
@@ -79,7 +79,8 @@ async def ai_chat_thread(thread):
 
     completion = completion.choices[0].message.content
     sources = [
-        " - https://github.com/PostHog/posthog.com/blob/master/" + doc.metadata["source"]
+        ":point_right:https://github.com/PostHog/posthog.com/blob/master/"
+        + doc.metadata["source"]
         for doc in documents
     ]
     sources = "\n".join(sources)
