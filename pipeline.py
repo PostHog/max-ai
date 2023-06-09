@@ -88,21 +88,23 @@ class MaxPipeline:
         )
         return results
 
-    def embed_git_repo(self):
-        if not os.path.exists(EXAMPLE_DATA_DIR):
+    def embed_git_repo(self, repo_url):
+        repo_dir = repo_url.split("/")[-1].replace(".git", "")
+        path = os.path.join(EXAMPLE_DATA_DIR, repo_dir)
+        if not os.path.exists(path):
             print("Repo not found, cloning...")
             repo = Repo.clone_from(
-                "https://github.com/posthog/posthog.com",
-                to_path=EXAMPLE_DATA_DIR,
+                repo_url,
+                to_path=path,
             )
         else:
             print("Repo already exists, pulling latest changes...")
-            repo = Repo(EXAMPLE_DATA_DIR)
+            repo = Repo(path)
             repo.git.pull()
 
         branch = repo.head.reference
         loader = GitLoader(
-            repo_path=EXAMPLE_DATA_DIR,
+            repo_path=path,
             branch=branch,
             file_filter=lambda file_path: file_path.endswith(".md"),
         )

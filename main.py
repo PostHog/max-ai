@@ -61,9 +61,11 @@ def create_entries(entries: Entries):
 
 
 @app.post("/_git")
-def create_git_entries():
+def create_git_entries(repo_url: str):
     print("git")
-    pipeline.embed_git_repo()
+    if not repo_url:
+        repo_url = "https://github.com/posthog/posthog.com"
+    pipeline.embed_git_repo(repo_url=repo_url)
     return {"status": "ok"}
 
 
