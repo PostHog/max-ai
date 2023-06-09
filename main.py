@@ -1,6 +1,7 @@
 import logging
 import os
-from typing import List
+from typing import List, Optional
+
 
 import sentry_sdk
 from dotenv import load_dotenv
@@ -47,8 +48,13 @@ class Message(BaseModel):
     role: str
     content: str
 
+
 class Query(BaseModel):
     query: str
+
+
+class GitHubRepo(BaseModel):
+    repo: Optional[str]
 
 
 pipeline = MaxPipeline(openai_token=os.getenv("OPENAI_TOKEN"))
@@ -61,11 +67,8 @@ def create_entries(entries: Entries):
 
 
 @app.post("/_git")
-def create_git_entries(repo_url: str):
-    print("git")
-    if not repo_url:
-        repo_url = "https://github.com/posthog/posthog.com"
-    pipeline.embed_git_repo(repo_url=repo_url)
+def create_git_entries(gh_repo: GitHubRepo):
+    pipeline.embed_git_repo(gh_repo=gh_repo.repo)
     return {"status": "ok"}
 
 
@@ -87,12 +90,11 @@ def receive_spawn():
 
 @app.post("/update")
 def update_oncall():
-    return "nope" 
+    return "nope"
 
 
 @app.post("/chat")
 async def chat(messages: List[Message]):
-    print(messages)
     msgs = [msg.dict() for msg in messages]
     response = await ai_chat_thread(msgs)
     return response

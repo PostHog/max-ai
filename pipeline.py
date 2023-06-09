@@ -75,8 +75,7 @@ class MaxPipeline:
         self.document_store.add_documents(documents)
 
     def retrieve_context(self, query: str):
-        result = self.retriever.get_relevant_documents(query)
-        return result
+        return self.retriever.get_relevant_documents(query)
 
     def chat(self, query: str):
         chain = RetrievalQAWithSourcesChain.from_chain_type(
@@ -88,8 +87,9 @@ class MaxPipeline:
         )
         return results
 
-    def embed_git_repo(self, repo_url):
-        repo_dir = repo_url.split("/")[-1].replace(".git", "")
+    def embed_git_repo(self, gh_repo):
+        repo_url = f"https://github.com/{gh_repo}.git"
+        repo_dir = gh_repo.split("/")[-1]
         path = os.path.join(EXAMPLE_DATA_DIR, repo_dir)
         if not os.path.exists(path):
             print("Repo not found, cloning...")
@@ -106,7 +106,7 @@ class MaxPipeline:
         loader = GitLoader(
             repo_path=path,
             branch=branch,
-            file_filter=lambda file_path: file_path.endswith(".md"),
+            file_filter=lambda file_path: file_path.endswith((".md", ".mdx")),
         )
         data = loader.load()
         for page in data:
@@ -114,6 +114,11 @@ class MaxPipeline:
             text = self.splitter.split_text(page.page_content)
             metadata = page.metadata
             print(f"Adding {page.metadata['source']}")
+            page.metadata[
+                "source"
+            ] = f"https://github.com/{gh_repo}/blob/master/{page.metadata['source']} "
             for token in text:
                 docs.append(Document(page_content=token, metadata=metadata))
             self.document_store.add_documents(docs)
+        print("Done")
+        return

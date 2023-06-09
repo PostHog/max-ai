@@ -39,15 +39,18 @@ async def ai_chat_thread(thread):
         [
             {"page_content": doc.page_content, "metadata": doc.metadata}
             for doc in documents
-        ]
+        ],
+        indent=2,
     )
+
+    print(json_docs)
 
     SYSTEM_PROMPT = """
     You are the trusty PostHog support AI named Max. You are also PostHog's Mascot!
     Please continue the conversation in a way that is helpful to the user and also makes the user feel like they are talking to a human.
-    Only suggest using PostHog products or services. Do not suggest products or services from other companies.
+    Only suggest using PostHog and ClickHouse products or services. Do not suggest products or services from other companies.
     Please answer the question according to the following context. 
-    Do not create links. Only reference the source from the metadata.source object in the context and prefix it with "https://github.com/PostHog/posthog.com/tree/master". 
+    Do not create links. Only reference the source from the metadata.source object in the context.
     If you get a question about pricing please refer to the reasonable and transparent pricing on the pricing page at https://posthog.com/pricing.
     If you are unsure of the answer, please say "I'm not sure" and encourage the user to ask PostHog staff.
     Try not to mention <@*> in the response.
@@ -72,8 +75,6 @@ async def ai_chat_thread(thread):
         {"role": "user", "content": CONTEXT_PROMPT + first_message["content"]},
         *follow_up_thread,
     ]
-
-    print(prompt)
 
     completion = openai.ChatCompletion.create(model=OPENAI_MODEL, messages=prompt)
 
