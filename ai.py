@@ -9,8 +9,8 @@ from plugins.pagerduty import current_oncalls
 
 load_dotenv()
 
-OPENAI_MODEL = "gpt-3.5-turbo"
-# OPENAI_MODEL = "gpt-4"
+# OPENAI_MODEL = "gpt-3.5-turbo"
+OPENAI_MODEL = "gpt-4"
 OPENAI_TOKEN = os.environ.get("OPENAI_TOKEN")
 
 if not OPENAI_TOKEN:
