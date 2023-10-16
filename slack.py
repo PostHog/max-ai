@@ -192,6 +192,13 @@ async def handle_app_mention_events(client, body, logger, say):
         )
         raise e
 
+
+@app.event({
+    "type": "member_joined_channel",
+})
+async def handle_channel_join_events(client, body, logger, say):
+
+
 async def _handle_app_mention_events(client, body, logger, say):
     logger.info(body)
     print(body)
